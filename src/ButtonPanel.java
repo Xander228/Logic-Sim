@@ -10,10 +10,11 @@ import java.awt.event.MouseEvent;
 
 public class ButtonPanel extends JPanel {
 
-    ButtonPanel(MainFrame frame){
+    ButtonPanel(){
         super();
         setLayout(new BorderLayout(20, 15));
         setBackground(Constants.BACKGROUND_COLOR);
+        Frame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
         class GameButton extends JButton {
             GameButton(String text){
@@ -30,38 +31,38 @@ public class ButtonPanel extends JPanel {
         JButton start = new GameButton("Start");
         start.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                GamePanel.boardManager.startTimer();
+                //GamePanel.boardManager.startTimer();
             }
         });
 
         JButton step = new GameButton("Step");
         step.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                GamePanel.boardManager.stopTimer();
-                GamePanel.boardManager.nextGeneration();
+                //GamePanel.boardManager.stopTimer();
+                //GamePanel.boardManager.nextGeneration();
             }
         });
 
         JButton stop = new GameButton("Stop");
         stop.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                GamePanel.boardManager.stopTimer();
+                //GamePanel.boardManager.stopTimer();
             }
         });
 
         JButton reset = new GameButton("Reset");
         reset.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                GamePanel.boardManager.stopTimer();
-                GamePanel.resetBoard();
+                //GamePanel.boardManager.stopTimer();
+                //GamePanel.resetBoard();
             }
         });
 
         JButton random = new GameButton("Random");
         random.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                GamePanel.boardManager.stopTimer();
-                GamePanel.randomizeBoard();
+                //GamePanel.boardManager.stopTimer();
+                //GamePanel.randomizeBoard();
             }
         });
 
@@ -69,8 +70,8 @@ public class ButtonPanel extends JPanel {
         importString.setPreferredSize(new Dimension(140, 40));
         importString.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                if(GamePanel.patternImporter != null) GamePanel.patternImporter.dispose();
-                GamePanel.patternImporter = new PatternImporter();
+                //if(GamePanel.patternImporter != null) GamePanel.patternImporter.dispose();
+                //GamePanel.patternImporter = new PatternImporter();
             }
         });
 
@@ -90,15 +91,10 @@ public class ButtonPanel extends JPanel {
         speed.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                GamePanel.updateTimerSpeed((int)speed.getValue());
+                //GamePanel.updateTimerSpeed((int)speed.getValue());
             }
         });
 
-        frame.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                frame.mainPanel.grabFocus();
-            }
-        });
 
         JPanel buttonSubPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,5));
         buttonSubPanel.setBackground(Constants.BACKGROUND_COLOR);

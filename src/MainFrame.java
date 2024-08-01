@@ -4,7 +4,7 @@ import java.awt.*;
 public class MainFrame extends JFrame {
 
     public static MainFrame frame;
-    public JPanel mainPanel;
+    public MainPanel mainPanel;
 
     public MainFrame() {
         super();
@@ -16,18 +16,8 @@ public class MainFrame extends JFrame {
 
         setTitle("Logic Sim");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainPanel = new JPanel();
-        mainPanel.setBorder(BorderFactory.createMatteBorder(10,10,10,10,Constants.ACCENT_COLOR)); //Add a border around the frame
-        mainPanel.setBackground(Constants.ACCENT_COLOR); //Set the background color of the panel
-        mainPanel.setLayout(new BorderLayout(10,10)); //Sets the edge offset of member panels to properly space them
+        mainPanel = new MainPanel();
 
-        ButtonPanel buttonPanel = new ButtonPanel();
-        SimStage simStage = new SimStage();
-        ComponentSelector componentSelector = new ComponentSelector();
-
-        mainPanel.add(buttonPanel,BorderLayout.NORTH);
-        mainPanel.add(simStage);
-        mainPanel.add(componentSelector,BorderLayout.SOUTH);
 
         add(mainPanel);
         pack();
