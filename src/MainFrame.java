@@ -4,7 +4,7 @@ import java.awt.*;
 public class MainFrame extends JFrame {
 
     public static MainFrame frame;
-    public MainPanel mainPanel;
+
 
     public MainFrame() {
         super();
@@ -16,10 +16,16 @@ public class MainFrame extends JFrame {
 
         setTitle("Logic Sim");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainPanel = new MainPanel();
+
+        JLayeredPane jLayeredPane = new JLayeredPane();
+        MainPanel mainPanel = new MainPanel();
 
 
-        add(mainPanel);
+        jLayeredPane.setLayout(new OverlayLayout(jLayeredPane));
+
+        jLayeredPane.add(mainPanel);
+        jLayeredPane.setLayer(mainPanel, JLayeredPane.DEFAULT_LAYER);
+        setContentPane(jLayeredPane);
         pack();
         setFocusable(true);
 
