@@ -14,7 +14,7 @@ public class ComponentSelector extends JPanel {
         buttonSubPanel.setBackground(Constants.BACKGROUND_COLOR);
 
 
-        buttonSubPanel.add(new LogicComponent(false,Color.WHITE));
+        buttonSubPanel.add(new LogicSelectable(false,Color.WHITE));
         add(buttonSubPanel);
 
 
