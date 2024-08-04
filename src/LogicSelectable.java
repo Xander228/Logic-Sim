@@ -8,15 +8,16 @@ import java.awt.event.MouseEvent;
 public class LogicSelectable extends JComponent {
     Color color;
     boolean draggable;
-    boolean dragging;
     int mouseX, mouseY;
     int startingX, startingY;
 
+    MouseAdapter mouseAdapter;
+    MouseMotionAdapter mouseMotionAdapter;
 
     LogicSelectable(Boolean draggable, Color color) {
         setPreferredSize(new Dimension(100,40));
         setMaximumSize(new Dimension(100,40));
-        setBorder(new MatteBorder(1,1,1,1,Color.ORANGE));
+        setBorder(new MatteBorder(2,2,2,2,Color.BLACK));
         this.color = color;
         this.draggable = draggable;
         Point p = MouseInfo.getPointerInfo().getLocation();
@@ -32,18 +33,23 @@ public class LogicSelectable extends JComponent {
 
     private void addListeners(){
         JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
-         pane.addMouseListener(new MouseAdapter() {
+
+        mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if(!isHovered(e.getLocationOnScreen())) return;
-                if(!draggable) createChild();
+                if (!isHovered(e.getLocationOnScreen())) return;
+                if (!draggable) createChild();
+                grabFocus();
             }
-             @Override
-             public void mouseReleased(MouseEvent e) {
-                 if(draggable) destruct();
-             }
-         });
-        pane.addMouseMotionListener(new MouseMotionAdapter() {
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (!draggable) return;
+                createComponent();
+                destruct();
+            }
+        };
+        mouseMotionAdapter = new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if(!draggable) return;
@@ -52,11 +58,20 @@ public class LogicSelectable extends JComponent {
 
                 int deltaX = eventX - mouseX;
                 int deltaY = eventY - mouseY;
-                setLocation(startingX + deltaX, startingY + deltaY);
+                int newX = startingX + deltaX;
+                int newY = startingY + deltaY;
+                newX = Math.min(pane.getWidth() - getWidth() - Constants.BORDER_WIDTH,
+                        Math.max(Constants.BORDER_WIDTH, newX));
+                newY = Math.min(pane.getHeight() - getHeight() - Constants.BORDER_WIDTH,
+                        Math.max(2 * Constants.BORDER_WIDTH + Constants.BUTTON_PANEL_HEIGHT, newY));
+                setLocation(newX, newY);
                 pane.repaint();
             }
 
-        });
+        };
+
+        pane.addMouseListener(mouseAdapter);
+        pane.addMouseMotionListener(mouseMotionAdapter);
     }
 
 
@@ -71,16 +86,22 @@ public class LogicSelectable extends JComponent {
 
     private void destruct(){
         JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
-        if(pane != null) {
-            pane.remove(this);
-            pane.revalidate();
-            pane.repaint();
-        }
+        if(pane == null) return;
+        pane.removeMouseListener(mouseAdapter);
+        pane.removeMouseMotionListener(mouseMotionAdapter);
+        pane.remove(this);
+        pane.revalidate();
+        pane.repaint();
 
     }
 
     private void createComponent(){
-
+        MainContainer mainContainer = (MainContainer) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
+        if(mainContainer == null) return;
+        LogicComponent logicComponent = new LogicComponent(color);
+        mainContainer.addToBoard(logicComponent);
+        logicComponent.setLocationFromScreen(getLocationOnScreen());
+        logicComponent.setTop();
     }
 
     public boolean isHovered(Point p){
@@ -99,17 +120,11 @@ public class LogicSelectable extends JComponent {
         Point p = getLocationOnScreen();
         SwingUtilities.convertPointFromScreen(p, pane);
 
-        LogicSelectable logicSelectable = new LogicSelectable(true,Color.BLUE);
+        LogicSelectable logicSelectable = new LogicSelectable(true,color);
+        logicSelectable.setBounds(p.x, p.y, getWidth(), getHeight());
+        logicSelectable.setStartingLocation(p);
         pane.add(logicSelectable);
         pane.setLayer(logicSelectable, JLayeredPane.DRAG_LAYER, 0);
-
-        logicSelectable.revalidate();
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                logicSelectable.setStartingLocation(p);
-            }
-        });
-
     }
 
 

@@ -1,6 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-
+import java.awt.event.*;
 public class MainFrame extends JFrame {
 
     public static MainFrame frame;
@@ -17,21 +17,24 @@ public class MainFrame extends JFrame {
         setTitle("Logic Sim");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JLayeredPane jLayeredPane = new JLayeredPane();
-        MainPanel mainPanel = new MainPanel();
+        MainContainer mainContainer = new MainContainer();
 
-
-        jLayeredPane.setLayout(new OverlayLayout(jLayeredPane));
-
-        jLayeredPane.add(mainPanel);
-        jLayeredPane.setLayer(mainPanel, JLayeredPane.DEFAULT_LAYER);
-        setContentPane(jLayeredPane);
+        setContentPane(mainContainer);
         pack();
         setFocusable(true);
 
+
         //Set the frame visible
         setVisible(true);
+
+        addWindowStateListener(new WindowStateListener() {
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                mainContainer.revalidate();
+            }
+        });
     }
+
 
     public static void main(String[] args){
         EventQueue.invokeLater(new Runnable(){

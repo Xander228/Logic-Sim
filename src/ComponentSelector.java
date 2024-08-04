@@ -10,12 +10,16 @@ public class ComponentSelector extends JPanel {
         Frame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
 
-        JPanel buttonSubPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,5));
-        buttonSubPanel.setBackground(Constants.BACKGROUND_COLOR);
+        JPanel selectorSubPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,5));
+        selectorSubPanel.setBackground(Constants.BACKGROUND_COLOR);
 
-
-        buttonSubPanel.add(new LogicSelectable(false,Color.WHITE));
-        add(buttonSubPanel);
+        selectorSubPanel.add(new LogicSelectable(false,Color.RED));
+        selectorSubPanel.add(new LogicSelectable(false,Color.ORANGE));
+        selectorSubPanel.add(new LogicSelectable(false,Color.YELLOW));
+        selectorSubPanel.add(new LogicSelectable(false,Color.GREEN));
+        selectorSubPanel.add(new LogicSelectable(false,Color.BLUE));
+        selectorSubPanel.add(new LogicSelectable(false,Color.MAGENTA));
+        add(selectorSubPanel);
 
 
     }

@@ -12,6 +12,8 @@ public class Constants {
     
     public static final int DESIRED_VIEWPORT_WIDTH = 1000;
     public static final int DESIRED_VIEWPORT_HEIGHT = 500;
+    public static final int BORDER_WIDTH = 10;
+    public static final int BUTTON_PANEL_HEIGHT = 50;
 
 
 

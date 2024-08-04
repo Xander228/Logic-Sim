@@ -12,7 +12,8 @@ public class ButtonPanel extends JPanel {
 
     ButtonPanel(){
         super();
-        setLayout(new BorderLayout(20, 15));
+        setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(0, Constants.BUTTON_PANEL_HEIGHT));
         setBackground(Constants.BACKGROUND_COLOR);
         Frame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
