@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class MainContainer extends JLayeredPane {
     private JPanel mainPanel;
@@ -28,15 +30,30 @@ public class MainContainer extends JLayeredPane {
         setLayout(null);
         add(mainPanel);
         setLayer(mainPanel, JLayeredPane.DEFAULT_LAYER);
-        revalidate();
+
+        this.setPreferredSize(mainPanel.getPreferredSize());
+        mainPanel.setBounds(0,0,mainPanel.getPreferredSize().width,mainPanel.getPreferredSize().height);
+        repaint();
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                getParent().addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        validate();
+                    }
+                });
+            }
+        });
 
     }
 
     @Override
-    public void revalidate(){
-        super.revalidate();
-        this.setPreferredSize(mainPanel.getPreferredSize());
-        mainPanel.setBounds(0,0,mainPanel.getPreferredSize().width,mainPanel.getPreferredSize().height);
+    public void validate(){
+        super.validate();
+        if(this.getParent().getSize().equals(new Dimension(0,0))) this.getParent().setSize(mainPanel.getPreferredSize());
+        this.setPreferredSize(this.getParent().getSize());
+        mainPanel.setBounds(0,0,this.getParent().getSize().width,this.getParent().getSize().height);
         repaint();
     }
 

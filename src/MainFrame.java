@@ -27,12 +27,6 @@ public class MainFrame extends JFrame {
         //Set the frame visible
         setVisible(true);
 
-        addWindowStateListener(new WindowStateListener() {
-            @Override
-            public void windowStateChanged(WindowEvent e) {
-                mainContainer.revalidate();
-            }
-        });
     }
 
 
