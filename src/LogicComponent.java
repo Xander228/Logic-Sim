@@ -13,11 +13,14 @@ public class LogicComponent extends JComponent {
 
 
     LogicComponent(Color color) {
-        setPreferredSize(new Dimension(100,40));
-        setMaximumSize(new Dimension(100,40));
+        setPreferredSize(new Dimension(100,100));
         setBorder(new MatteBorder(2,2,2,2,Color.BLACK));
         this.color = color;
         this.dragging = false;
+        setLayout(null);
+
+
+
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -51,6 +54,7 @@ public class LogicComponent extends JComponent {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if(!dragging) return;
+
                 int eventX = e.getXOnScreen();
                 int eventY = e.getYOnScreen();
 
@@ -153,8 +157,12 @@ public class LogicComponent extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         g.setColor(color);
         g.fillRect(0, 0, getWidth(), getHeight());
+
+        Connector connector = new Connector(50,50);
+        connector.paintComponent(g);
 
     }
 }
