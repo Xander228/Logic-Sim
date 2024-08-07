@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class LogicSelectable extends JComponent {
     Color color;
@@ -15,6 +16,7 @@ public class LogicSelectable extends JComponent {
     MouseMotionAdapter mouseMotionAdapter;
 
     LogicSelectable(Boolean draggable, Color color) {
+
         setPreferredSize(new Dimension(100,40));
         setMaximumSize(new Dimension(100,40));
         setBorder(new MatteBorder(2,2,2,2,Color.BLACK));
@@ -23,6 +25,8 @@ public class LogicSelectable extends JComponent {
         Point p = MouseInfo.getPointerInfo().getLocation();
         mouseX = p.x;
         mouseY = p.y;
+
+
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -37,6 +41,7 @@ public class LogicSelectable extends JComponent {
         mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                if(e.getButton() != MouseEvent.BUTTON1) return;
                 if (!isHovered(e.getLocationOnScreen())) return;
                 if (!draggable) createChild();
                 grabFocus();
@@ -44,6 +49,7 @@ public class LogicSelectable extends JComponent {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if(e.getButton() != MouseEvent.BUTTON1) return;
                 if (!draggable) return;
                 createComponent();
                 destruct();
@@ -133,6 +139,5 @@ public class LogicSelectable extends JComponent {
         super.paintComponent(g);
         g.setColor(color);
         g.fillRect(0, 0, getWidth(), getHeight());
-
     }
 }

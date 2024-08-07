@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 
@@ -21,6 +20,18 @@ public class SimStage extends JPanel {
             }
         });
 
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
+        ActionMap actionMap = getActionMap();
+        actionMap.put("escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                grabFocus();
+            }
+        });
+
+
     }
 
     public void setTop(Component component) {
@@ -37,6 +48,7 @@ public class SimStage extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        DisplayController.drawBoard((Graphics2D) g);
 
     }
 }

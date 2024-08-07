@@ -17,7 +17,7 @@ public class Constants {
 
 
 
-    public static final int DEFAULT_CELL_WIDTH = 16;
+    public static final int DEFAULT_CELL_WIDTH = 20;
     public static final int MAX_CELL_WIDTH = 60;
     public static final double MIN_CELL_WIDTH = .05;
     public static final double CELL_BORDER_RATIO = 0.1;
