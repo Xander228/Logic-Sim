@@ -3,12 +3,16 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
 public class Connector{
-    int xCenter,yCenter;
-    int outerCircleDiameter;
-    public Connector(int x, int y) {
+    double xCenter,yCenter;
+    double outerCircleDiameter;
+
+    public Connector() {
+    }
+
+    public void setBounds(double x, double y, double diameter) {
         this.xCenter = x;
         this.yCenter = y;
-        outerCircleDiameter = 18;
+        this.outerCircleDiameter = diameter * 1.8;
     }
 
     public void paintComponent(Graphics2D g2d) {

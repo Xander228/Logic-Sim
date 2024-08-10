@@ -1,39 +1,34 @@
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class LogicComponent extends JComponent {
     Color color;
     boolean dragging;
+    int boardX, boardY;
+    int pixelX, pixelY;
+
     int mouseX, mouseY;
-    int x, y;
-    int xInset, yInset;
+    double startX, startY;
+
+    double xInset, yInset;
 
     Connector[] inputConnectors;
     Connector[] outputConnectors;
 
 
     LogicComponent(Color color) {
-        int desiredWidth = 80;
-        xInset = Constants.DEFAULT_CELL_WIDTH;
-        yInset = 11;
 
         inputConnectors = new Connector[4];
         outputConnectors = new Connector[4];
 
-        int minHeightInCells = inputConnectors.length + 1;
-        minHeightInCells = Math.max(minHeightInCells, outputConnectors.length + 1);
-        int pixelHeight = minHeightInCells * Constants.DEFAULT_CELL_WIDTH;
-
-        setPreferredSize(new Dimension(desiredWidth + xInset * 2,pixelHeight));
-        setBounds(x, y, getPreferredSize().width, getPreferredSize().height);
 
         this.color = color;
         setOpaque(false);
@@ -58,23 +53,23 @@ public class LogicComponent extends JComponent {
         ActionMap actionMap = getActionMap();
         actionMap.put("up", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                setLocation(getLocation().x, getLocation().y - Constants.DEFAULT_CELL_WIDTH);
+                setBoardLocation(getBoardLocation().x, getBoardLocation().y - 1);
 
             }
         });
         actionMap.put("down", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                setLocation(getLocation().x, getLocation().y + Constants.DEFAULT_CELL_WIDTH);
+                setBoardLocation(getBoardLocation().x, getBoardLocation().y + 1);
             }
         });
         actionMap.put("left", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                setLocation(getLocation().x - Constants.DEFAULT_CELL_WIDTH, getLocation().y);
+                setBoardLocation(getBoardLocation().x - 1, getBoardLocation().y);
             }
         });
         actionMap.put("right", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                setLocation(getLocation().x + Constants.DEFAULT_CELL_WIDTH, getLocation().y);
+                setBoardLocation(getBoardLocation().x + 1, getBoardLocation().y);
             }
         });
 
@@ -87,27 +82,26 @@ public class LogicComponent extends JComponent {
 
     private void initializeConnectors() {
         for (int i = 0; i < inputConnectors.length; i++) {
-            inputConnectors[i] = new Connector(xInset,Constants.DEFAULT_CELL_WIDTH * (i + 1));
+            inputConnectors[i] = new Connector();
         }
 
         for (int i = 0; i < outputConnectors.length; i++){
-            outputConnectors[i] = new Connector(this.getWidth() - xInset,Constants.DEFAULT_CELL_WIDTH * (i + 1));
+            outputConnectors[i] = new Connector();
         }
 
     }
 
     private void addListeners(){
-        JPanel stage = (JPanel) this.getParent();
+        SimStage stage = (SimStage) this.getParent();
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
-                Point p = e.getLocationOnScreen();
-                mouseX = p.x;
-                mouseY = p.y;
+                mouseX = e.getXOnScreen();
+                mouseY = e.getYOnScreen();
 
-                x = getX();
-                y = getY();
+                startX = pixelX;
+                startY = pixelY;
 
                 dragging = true;
                 grabFocus();
@@ -117,7 +111,7 @@ public class LogicComponent extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 dragging = false;
-                setLocation(getLocation());
+                snapToBoard();
             }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -131,10 +125,10 @@ public class LogicComponent extends JComponent {
                 int deltaX = eventX - mouseX;
                 int deltaY = eventY - mouseY;
 
-                int newX = x + deltaX;
-                int newY = y + deltaY;
+                double newX = (int) startX + deltaX;
+                double newY = (int) startY + deltaY;
 
-                setLocation(newX, newY);
+                setPixelLocation(newX, newY);
 
                 stage.repaint();
             }
@@ -156,6 +150,7 @@ public class LogicComponent extends JComponent {
         });
     }
 
+    @Deprecated
     private boolean isOverlapped(){
         ArrayList<Component> components =
                 new ArrayList<Component>(Arrays.asList(getParent().getComponents()));
@@ -165,7 +160,7 @@ public class LogicComponent extends JComponent {
             if(getBounds().intersects(component.getBounds())) return true;
         return false;
     }
-
+    @Deprecated
     private boolean isOverlapped(int x, int y){
         ArrayList<Component> components =
                 new ArrayList<Component>(Arrays.asList(getParent().getComponents()));
@@ -179,34 +174,88 @@ public class LogicComponent extends JComponent {
         return false;
     }
 
+    private Point pixelToBoard(Point2D.Double pixel){
+        SimStage simStage = (SimStage) getParent();
+        return new Point(
+                (int) Math.round(pixel.getX() / simStage.cellWidth - simStage.viewPortOffsetX),
+                (int) Math.round(pixel.getY() / simStage.cellWidth - simStage.viewPortOffsetY));
+    }
 
-    public void setLocationFromScreen(Point p){
+    private Point2D.Double boardToPixel(Point board){
+        SimStage simStage = (SimStage) getParent();
+        return new Point2D.Double(
+                (board.getX() + simStage.viewPortOffsetX) * simStage.cellWidth,
+                (board.getY() + simStage.viewPortOffsetY) * simStage.cellWidth);
+    }
+
+    public void snapToBoard(){
+        setBoardLocation(pixelToBoard(new Point2D.Double(pixelX,pixelY)));
+    }
+
+    public Point getBoardLocation(){
+        return new Point(boardX, boardY);
+
+    }
+
+    public void setBoardLocationFromScreen(Point p){
         SwingUtilities.convertPointFromScreen(p, this.getParent());
-        setLocation(p.x, p.y);
-    }
-    @Override
-    public void setLocation(Point p){
-        setLocation(p.x, p.y);
+        setBoardLocation(pixelToBoard(new Point2D.Double(p.x, p.y)));
     }
 
-    @Override
-    public void setLocation(int x, int y) {
-        int oldX = getX();
-        int oldY = getY();
-        if(!dragging) {
-            x = (int) Math.round(x / (double) Constants.DEFAULT_CELL_WIDTH) * Constants.DEFAULT_CELL_WIDTH;
-            y = (int) Math.round(y / (double) Constants.DEFAULT_CELL_WIDTH) * Constants.DEFAULT_CELL_WIDTH;
-        }
+    public void setBoardLocation(Point p){
+        setBoardLocation(p.x, p.y);
+    }
 
-        x = Math.min(getParent().getWidth() - getWidth(),
-                Math.max(0, x));
-        y = Math.min(getParent().getHeight() - getHeight(),
-                Math.max(0, y));
+    public void setPixelLocation(Point2D.Double p){
+        setPixelLocation(p.x, p.y);
+    }
 
-        super.setLocation(x, y);
+    public void setBoardLocation(int x, int y) {
+        boardX = x;
+        boardY = y;
 
+        updateRelativeLocation();
+    }
+
+    public void setPixelLocation(double x, double y){
+        pixelX = (int) x;
+        pixelY = (int) y;
+
+        updateLocation();
         repaint();
         getParent().repaint();
+    }
+
+    public void updateRelativeLocation(){
+        setPixelLocation(boardToPixel(new Point(boardX,boardY)));
+    }
+
+    private void updateLocation(){
+        SimStage simStage = (SimStage) getParent();
+        double cellWidth = simStage.cellWidth;
+
+        xInset = cellWidth ;
+        yInset = cellWidth * .1;
+
+        int minHeightInCells = inputConnectors.length;
+        minHeightInCells = Math.max(minHeightInCells, outputConnectors.length);
+        double pixelHeight = minHeightInCells * cellWidth * 2;
+
+        setBounds(
+                (int) (pixelX),
+                (int) (pixelY),
+                (int) (Constants.DEFAULT_COMPONENT_WIDTH * cellWidth + xInset * 2),
+                (int) pixelHeight);
+
+        for (int i = 0; i < inputConnectors.length; i++) {
+            inputConnectors[i].setBounds((int) xInset,(int) (cellWidth * (i * 2 + 1) ), cellWidth);
+        }
+
+        for (int i = 0; i < outputConnectors.length; i++){
+            outputConnectors[i].setBounds((int) (this.getWidth() - xInset),(int) (cellWidth * (i * 2 + 1) ), (int) cellWidth);
+        }
+
+        repaint();
     }
 
     public void setTop(){
@@ -226,15 +275,7 @@ public class LogicComponent extends JComponent {
     }
 
 
-    public boolean isHovered(Point p){
-        SwingUtilities.convertPointFromScreen(p, this);
-        return 0 <= p.getX() && p.getX() <= getWidth() && 0 <= p.getY() && p.getY() <= getHeight();
-    }
 
-    public boolean isHovered(int x, int y){
-        Point p = new Point(x,y);
-        return isHovered(p);
-    }
 
 
     public void createChild(){
@@ -264,15 +305,18 @@ public class LogicComponent extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setColor(color);
-        g2d.fillRect(
+
+        Shape body = new Rectangle2D.Double(
                 xInset,
                 yInset,
                 getWidth() - 2 * xInset,
                 getHeight() - 2 * yInset);
 
+        g2d.fill(body);
 
         for(Connector connector : inputConnectors) connector.paintComponent(g2d);
         for(Connector connector : outputConnectors) connector.paintComponent(g2d);
 
     }
+
 }

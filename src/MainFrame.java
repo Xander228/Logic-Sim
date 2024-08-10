@@ -27,6 +27,12 @@ public class MainFrame extends JFrame {
         //Set the frame visible
         setVisible(true);
 
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                mainContainer.validate();
+            }
+        });
+
     }
 
 

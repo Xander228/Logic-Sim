@@ -17,6 +17,11 @@ public class ButtonPanel extends JPanel {
         setBackground(Constants.BACKGROUND_COLOR);
         Frame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
+        //todo
+        //home
+        //
+
+
         class GameButton extends JButton {
             GameButton(String text){
                 super(text);

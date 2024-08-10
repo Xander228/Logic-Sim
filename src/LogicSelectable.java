@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 public class LogicSelectable extends JComponent {
     Color color;
@@ -106,7 +105,7 @@ public class LogicSelectable extends JComponent {
         if(mainContainer == null) return;
         LogicComponent logicComponent = new LogicComponent(color);
         mainContainer.addToBoard(logicComponent);
-        logicComponent.setLocationFromScreen(getLocationOnScreen());
+        logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
         logicComponent.setTop();
     }
 

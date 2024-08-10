@@ -19,13 +19,13 @@ public class MainContainer extends JLayeredPane {
         mainPanel.setBackground(Constants.ACCENT_COLOR); //Set the background color of the panel
         mainPanel.setLayout(new BorderLayout(Constants.BORDER_WIDTH,Constants.BORDER_WIDTH)); //Sets the edge offset of member panels to properly space them
 
-        ButtonPanel buttonPanel = new ButtonPanel();
+        ButtonPanel topPanel = new ButtonPanel();
         simStage = new SimStage();
-        ComponentSelector componentSelector = new ComponentSelector();
+        BottomPanel bottomPanel = new BottomPanel();
 
-        mainPanel.add(buttonPanel,BorderLayout.NORTH);
+        mainPanel.add(topPanel,BorderLayout.NORTH);
         mainPanel.add(simStage);
-        mainPanel.add(componentSelector,BorderLayout.SOUTH);
+        mainPanel.add(bottomPanel,BorderLayout.SOUTH);
 
         setLayout(null);
         add(mainPanel);
@@ -45,6 +45,7 @@ public class MainContainer extends JLayeredPane {
                 });
             }
         });
+
 
     }
 

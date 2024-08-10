@@ -16,10 +16,11 @@ public class Constants {
     public static final int BUTTON_PANEL_HEIGHT = 50;
 
 
+    public static final int DEFAULT_COMPONENT_WIDTH = 8;
 
-    public static final int DEFAULT_CELL_WIDTH = 20;
-    public static final int MAX_CELL_WIDTH = 60;
-    public static final double MIN_CELL_WIDTH = .05;
+    public static final int DEFAULT_CELL_WIDTH = 10;
+    public static final int MAX_CELL_WIDTH = 80;
+    public static final double MIN_CELL_WIDTH = 1;
     public static final double CELL_BORDER_RATIO = 0.1;
     public static final double ZOOM_SCALE_FACTOR = 0.1;
     public static final double PAN_SPEED_FACTOR = 10;
