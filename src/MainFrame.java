@@ -1,6 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.sort;
+import static javax.swing.UIManager.*;
+
 public class MainFrame extends JFrame {
 
     public static MainFrame frame;
@@ -8,10 +16,24 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         super();
+        /*
+        javax.swing.plaf.metal.MetalLookAndFeel
+        Nimbus javax.swing.plaf.nimbus.NimbusLookAndFeel
+        CDE/Motif com.sun.java.swing.plaf.motif.MotifLookAndFeel
+        Windows com.sun.java.swing.plaf.windows.WindowsLookAndFeel
+        Windows Classic com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
+         */
+        //for(UIManager.LookAndFeelInfo info :UIManager.getInstalledLookAndFeels()) System.out.println(info);
+        try {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-        UIManager.put("ToolTip.foreground", Constants.BACKGROUND_COLOR);
-        UIManager.put("ToolTip.background", Constants.PRIMARY_COLOR);
-        UIManager.put("ToolTip.border",BorderFactory.createMatteBorder(1,1,1,1,Constants.BACKGROUND_COLOR));
+        ArrayList<String> list = new ArrayList<>();
+        for(Object key : getDefaults().keySet())  list.add(key.toString());
+        Collections.sort(list);
+        for(String key : list)    System.out.println(key + " - " + UIManager.get(key));
 
 
         setTitle("Logic Sim");
