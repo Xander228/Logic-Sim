@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -25,16 +27,12 @@ public class MainFrame extends JFrame {
          */
         //for(UIManager.LookAndFeelInfo info :UIManager.getInstalledLookAndFeels()) System.out.println(info);
         try {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        ArrayList<String> list = new ArrayList<>();
-        for(Object key : getDefaults().keySet())  list.add(key.toString());
-        Collections.sort(list);
-        for(String key : list)    System.out.println(key + " - " + UIManager.get(key));
-
+        MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
 
         setTitle("Logic Sim");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

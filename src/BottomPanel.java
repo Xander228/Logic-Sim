@@ -4,26 +4,38 @@ import java.awt.*;
 public class BottomPanel extends JTabbedPane {
 
     public BottomPanel() {
-        UIManager.put("TabbedPane.tabAreaBackground", Color.RED);
-        UIManager.put("TabbedPane.unselectedBackground", Color.ORANGE);
-        UIManager.put("TabbedPane.selectHighlight", Color.YELLOW);
-        UIManager.put("TabbedPane.highlight", Color.GREEN);
-        UIManager.put("TabbedPane.borderHightlightColor", Color.CYAN);
-        UIManager.put("TabbedPane.contentAreaColor", Constants.PRIMARY_COLOR);
-        UIManager.put("TabbedPane.focus", Color.MAGENTA);
-        UIManager.put("TabbedPane.selected", Color.RED);
+        UIManager.put("TabbedPane.background", Color.RED);
+        UIManager.put("TabbedPane.borderHighlightColor", Color.RED);
+        UIManager.put("TabbedPane.darkShadow", Color.RED);
+
+        UIManager.put("TabbedPane.foreground", Constants.BACKGROUND_COLOR);
+        UIManager.put("TabbedPane.selectForeground", Color.RED);
         UIManager.put("TabbedPane.light", Color.RED);
-        UIManager.put("TabbedPane.background", Constants.PRIMARY_COLOR);
-        UIManager.put("TabbedPane.foreground", Constants.PRIMARY_COLOR);
+        UIManager.put("TabbedPane.selectHighlight", Color.RED);
+        UIManager.put("TabbedPane.selected", Color.RED);
+        UIManager.put("TabbedPane.selectShadow", Color.RED);
+        UIManager.put("TabbedPane.tabAreaBackground", Color.RED);
+        UIManager.put("TabbedPane.tabInsets", Color.RED);
+        UIManager.put("TabbedPane.selectBackground", Color.RED);
+        UIManager.put("TabbedPane.underlineColor", Color.BLUE);
+        UIManager.put("TabbedPane.tabSeparatorColor", Color.BLUE);
+        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0,0,0,0));
+        //UIManager.put("TabbedPane.tabInsets", new Insets(0,0,0,0));
+        //UIManager.put("TabbedPane.tabAreaInsets", new Insets(0,0,0,0));
+        //UIManager.put("TabbedPane.selectedTabPadInsets", new Insets(0,0,0,0));
+        //UIManager.put("TabbedPaneUI", "javax.swing.plaf.basic.BasicTabbedPaneUI");
+
+
 
         this.getUI();
-        //for(Object key : UIManager.getDefaults().keySet()) System.out.println(key + " - " + UIManager.get(key));
+        System.out.println(UIManager.get("TabbedPaneUI"));
+        add("One",new ComponentSelector());
+        add("Two",new ComponentSelector());
+        add("Three",new ComponentSelector());
 
-        add(new ComponentSelector());
-        add(new ComponentSelector());
-        add(new ComponentSelector());
-        setBackground(Constants.PRIMARY_COLOR);
-        setForeground(Constants.ACCENT_COLOR);
+        setTabPlacement(JTabbedPane.TOP);
+        setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        setFocusable(false);
 
     }
 }
