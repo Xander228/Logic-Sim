@@ -7,8 +7,13 @@
     <list default="true" id="a35dc4b2-2f4a-439f-8202-24ea6492bee7" name="Changes" comment="update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BottomPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BottomPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ButtonPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ButtonPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComponentSelector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComponentSelector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Connector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Connector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LogicComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/LogicComponent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LogicSelectable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/LogicSelectable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MainFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MainFrame.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UIManagerKeys" beforeDir="false" afterPath="$PROJECT_DIR$/src/UIManagerKeys" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SimStage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SimStage.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +114,8 @@
       <workItem from="1723423783715" duration="664000" />
       <workItem from="1723424461326" duration="496000" />
       <workItem from="1723424974405" duration="78000" />
-      <workItem from="1723425747426" duration="8195000" />
+      <workItem from="1723425747426" duration="12286000" />
+      <workItem from="1723499565200" duration="25619000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />

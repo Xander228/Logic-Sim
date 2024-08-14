@@ -7,7 +7,6 @@ public class ComponentSelector extends JPanel {
         super();
         setLayout(new BorderLayout(20, 15));
         setBackground(Constants.BACKGROUND_COLOR);
-        Frame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
 
         JPanel selectorSubPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,5));

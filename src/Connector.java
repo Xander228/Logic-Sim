@@ -1,18 +1,35 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 
 public class Connector{
+    boolean isInput;
     double xCenter,yCenter;
+    double radius;
     double outerCircleDiameter;
+    String name;
+    Font font;
 
-    public Connector() {
+    public Connector(String name, boolean isInput){
+        this.name = name;
+        this.isInput = isInput;
     }
 
-    public void setBounds(double x, double y, double diameter) {
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public void setBounds(double x, double y, double radius) {
         this.xCenter = x;
         this.yCenter = y;
-        this.outerCircleDiameter = diameter * 1.8;
+        this.radius = radius;
+        this.outerCircleDiameter = radius * 1.8;
     }
 
     public void paintComponent(Graphics2D g2d) {
@@ -31,5 +48,10 @@ public class Connector{
         g2d.fill(outerCircle);
         g2d.setColor(Constants.BACKGROUND_COLOR);
         g2d.fill(innerCircle);
+
+        g2d.setColor(Constants.BACKGROUND_COLOR);
+        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont((float)(radius * 1.375)));
+        double xOffset = isInput ? (radius) : -(radius) - (g2d.getFontMetrics().stringWidth(name));
+        g2d.drawString(name, (float)(xCenter + xOffset), (float)(yCenter + radius / 2.0));
     }
 }

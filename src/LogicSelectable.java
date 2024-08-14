@@ -121,6 +121,7 @@ public class LogicSelectable extends JComponent {
 
 
     public void createChild(){
+        System.out.println("Creating child");
         JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
         Point p = getLocationOnScreen();
         SwingUtilities.convertPointFromScreen(p, pane);

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 
 public class SimStage extends JPanel {
+    int oldHeight;
     double mouseX, mouseY;
     double startX, startY;
     double viewPortOffsetX, viewPortOffsetY;
@@ -19,6 +20,29 @@ public class SimStage extends JPanel {
         setPreferredSize(new Dimension(Constants.DESIRED_VIEWPORT_WIDTH, Constants.DESIRED_VIEWPORT_HEIGHT));
         setBackground(Constants.BACKGROUND_COLOR);
         setLayout(null);
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                addListeners();
+            }
+        });
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
+        ActionMap actionMap = getActionMap();
+        actionMap.put("escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                grabFocus();
+            }
+        });
+
+
+    }
+
+    private void addListeners(){
+        oldHeight = getHeight();
+        viewPortOffsetY = getHeight() / cellWidth - 1;
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -49,7 +73,7 @@ public class SimStage extends JPanel {
 
         });
 
-        this.addMouseWheelListener(new MouseWheelListener() {
+        addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 centeredZoom(e.getPreciseWheelRotation());
@@ -57,18 +81,18 @@ public class SimStage extends JPanel {
             }
         });
 
-
-        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
-        ActionMap actionMap = getActionMap();
-        actionMap.put("escape", new AbstractAction() {
+        addComponentListener(new ComponentAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                grabFocus();
+            public void componentResized(ComponentEvent e){
+                double deltaHeight = (e.getComponent().getHeight() - oldHeight) / cellWidth;
+
+                viewPortOffsetY = viewPortOffsetY + deltaHeight;
+                for(Component c : components) ((LogicComponent) c).updateRelativeLocation();
+
+                oldHeight = e.getComponent().getHeight();
+                repaint();
             }
         });
-
-
     }
 
     public void setTop(Component component) {

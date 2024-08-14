@@ -18,19 +18,6 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         super();
-        /*
-        javax.swing.plaf.metal.MetalLookAndFeel
-        Nimbus javax.swing.plaf.nimbus.NimbusLookAndFeel
-        CDE/Motif com.sun.java.swing.plaf.motif.MotifLookAndFeel
-        Windows com.sun.java.swing.plaf.windows.WindowsLookAndFeel
-        Windows Classic com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
-         */
-        //for(UIManager.LookAndFeelInfo info :UIManager.getInstalledLookAndFeels()) System.out.println(info);
-        try {
-            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
         MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
 

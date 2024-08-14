@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ public class LogicComponent extends JComponent {
     double startX, startY;
 
     double xInset, yInset;
+    double doubleWidth, doubleHeight;
 
     Connector[] inputConnectors;
     Connector[] outputConnectors;
@@ -81,14 +84,50 @@ public class LogicComponent extends JComponent {
     }
 
     private void initializeConnectors() {
+        int j;
+        if (color.equals(Color.RED)) {
+            j = 1;
+        } else if (color.equals(Color.ORANGE)) {
+            j = 2;
+        } else if (color.equals(Color.YELLOW)) {
+            j = 3;
+        } else if (color.equals(Color.GREEN)) {
+            j = 4;
+        } else if (color.equals(Color.BLUE)) {
+            j = 5;
+        } else if (color.equals(Color.MAGENTA)) {
+            j = 6;
+        } else {
+            j = 0;
+        }
+
+        j = (int) Math.pow(10, j);
         for (int i = 0; i < inputConnectors.length; i++) {
-            inputConnectors[i] = new Connector();
+            inputConnectors[i] = new Connector("x", true);
         }
 
         for (int i = 0; i < outputConnectors.length; i++){
-            outputConnectors[i] = new Connector();
+            outputConnectors[i] = new Connector("x" + ((i+1) * j), false);
         }
 
+    }
+
+    private int minWidth(){
+        Graphics2D g2d = (Graphics2D)getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
+
+        double maxInputWidth = 0;
+        for (int i = 0; i < inputConnectors.length; i++) {
+            maxInputWidth = Math.max(maxInputWidth, g2d.getFontMetrics().stringWidth(inputConnectors[i].getName()) / 10.0);
+        }
+        double maxOutputWidth = 0;
+        for (int i = 0; i < inputConnectors.length; i++) {
+            maxOutputWidth = Math.max(maxOutputWidth, g2d.getFontMetrics().stringWidth(outputConnectors[i].getName()) / 10.0);
+        }
+        System.out.println(maxInputWidth + maxOutputWidth + 2);
+        return (int) Math.ceil(maxInputWidth + maxOutputWidth + 2);
     }
 
     private void addListeners(){
@@ -237,22 +276,25 @@ public class LogicComponent extends JComponent {
         xInset = cellWidth ;
         yInset = cellWidth * .1;
 
+
+
         int minHeightInCells = inputConnectors.length;
         minHeightInCells = Math.max(minHeightInCells, outputConnectors.length);
-        double pixelHeight = minHeightInCells * cellWidth * 2;
+        doubleHeight = minHeightInCells * cellWidth * 2;
+        doubleWidth = minWidth() * cellWidth + xInset * 2;
 
         setBounds(
                 (int) (pixelX),
                 (int) (pixelY),
-                (int) (Constants.DEFAULT_COMPONENT_WIDTH * cellWidth + xInset * 2),
-                (int) pixelHeight);
+                (int) doubleWidth,
+                (int) doubleHeight);
 
         for (int i = 0; i < inputConnectors.length; i++) {
-            inputConnectors[i].setBounds((int) xInset,(int) (cellWidth * (i * 2 + 1) ), cellWidth);
+            inputConnectors[i].setBounds( xInset, (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
         for (int i = 0; i < outputConnectors.length; i++){
-            outputConnectors[i].setBounds((int) (this.getWidth() - xInset),(int) (cellWidth * (i * 2 + 1) ), (int) cellWidth);
+            outputConnectors[i].setBounds((doubleWidth - xInset), (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
         repaint();
@@ -304,13 +346,16 @@ public class LogicComponent extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
         g2d.setColor(color);
 
         Shape body = new Rectangle2D.Double(
                 xInset,
                 yInset,
-                getWidth() - 2 * xInset,
-                getHeight() - 2 * yInset);
+                doubleWidth - 2 * xInset,
+                doubleHeight - 2 * yInset);
 
         g2d.fill(body);
 
