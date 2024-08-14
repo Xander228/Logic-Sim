@@ -12,14 +12,22 @@ public class ComponentSelector extends JPanel {
         JPanel selectorSubPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,5));
         selectorSubPanel.setBackground(Constants.BACKGROUND_COLOR);
 
-        selectorSubPanel.add(new LogicSelectable(false,Color.RED));
-        selectorSubPanel.add(new LogicSelectable(false,Color.ORANGE));
-        selectorSubPanel.add(new LogicSelectable(false,Color.YELLOW));
-        selectorSubPanel.add(new LogicSelectable(false,Color.GREEN));
-        selectorSubPanel.add(new LogicSelectable(false,Color.BLUE));
-        selectorSubPanel.add(new LogicSelectable(false,Color.MAGENTA));
+        for(int i = 0; i < 7; i++)
+            selectorSubPanel.add(new LogicSelectable(false,randomColor()));
         add(selectorSubPanel);
 
 
+    }
+
+    private Color randomColor(){
+        int r = (int) (Math.random() * 256);
+        int g = (int) (Math.random() * 256);
+        int b = (int) (Math.random() * 256);
+        return new Color(r, g, b);
+    }
+
+    public boolean checkIfSelected(){
+        BottomPanel bottomPanel = (BottomPanel) SwingUtilities.getAncestorOfClass(BottomPanel.class, this);
+        return bottomPanel.checkIfSelected(this);
     }
 }

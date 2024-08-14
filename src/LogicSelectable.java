@@ -40,8 +40,9 @@ public class LogicSelectable extends JComponent {
         mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if(e.getButton() != MouseEvent.BUTTON1) return;
+                if (e.getButton() != MouseEvent.BUTTON1) return;
                 if (!isHovered(e.getLocationOnScreen())) return;
+                if (!checkIfSelected()) return;
                 if (!draggable) createChild();
                 grabFocus();
             }
@@ -79,6 +80,11 @@ public class LogicSelectable extends JComponent {
         pane.addMouseMotionListener(mouseMotionAdapter);
     }
 
+    private boolean checkIfSelected(){
+        ComponentSelector componentSelector =
+                (ComponentSelector) SwingUtilities.getAncestorOfClass(ComponentSelector.class, this);
+        return (componentSelector.checkIfSelected());
+    }
 
     public void setStartingLocation(Point p){
         startingX = p.x;

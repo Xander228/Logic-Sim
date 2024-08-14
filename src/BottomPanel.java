@@ -16,8 +16,8 @@ public class BottomPanel extends JTabbedPane {
 
         this.getUI();
         add("One", new ComponentSelector());
-        //add("Two", new ComponentSelector());
-        //add("Three", new ComponentSelector());
+        add("Two", new ComponentSelector());
+        add("Three", new ComponentSelector());
 
         setTabPlacement(JTabbedPane.TOP);
         setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -29,6 +29,14 @@ public class BottomPanel extends JTabbedPane {
                 addListeners();
             }
         });
+    }
+
+    public boolean checkIfSelected(Component component){
+        int index = indexOfComponent(component);
+        if(getSelectedIndex() == index){
+            return true;
+        }
+        return false;
     }
 
     private void addListeners(){

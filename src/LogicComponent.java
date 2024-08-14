@@ -4,8 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -84,22 +82,7 @@ public class LogicComponent extends JComponent {
     }
 
     private void initializeConnectors() {
-        int j;
-        if (color.equals(Color.RED)) {
-            j = 1;
-        } else if (color.equals(Color.ORANGE)) {
-            j = 2;
-        } else if (color.equals(Color.YELLOW)) {
-            j = 3;
-        } else if (color.equals(Color.GREEN)) {
-            j = 4;
-        } else if (color.equals(Color.BLUE)) {
-            j = 5;
-        } else if (color.equals(Color.MAGENTA)) {
-            j = 6;
-        } else {
-            j = 0;
-        }
+        int j = (int) (Math.random() * 7) + 1;
 
         j = (int) Math.pow(10, j);
         for (int i = 0; i < inputConnectors.length; i++) {
@@ -126,7 +109,6 @@ public class LogicComponent extends JComponent {
         for (int i = 0; i < inputConnectors.length; i++) {
             maxOutputWidth = Math.max(maxOutputWidth, g2d.getFontMetrics().stringWidth(outputConnectors[i].getName()) / 10.0);
         }
-        System.out.println(maxInputWidth + maxOutputWidth + 2);
         return (int) Math.ceil(maxInputWidth + maxOutputWidth + 2);
     }
 
