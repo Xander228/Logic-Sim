@@ -96,7 +96,7 @@ public class LogicSelectable extends JComponent {
 
 
     private void destruct(){
-        JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
+        Container pane = getParent();
         if(pane == null) return;
         pane.removeMouseListener(mouseAdapter);
         pane.removeMouseMotionListener(mouseMotionAdapter);

@@ -4,33 +4,42 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class LogicComponent extends JComponent {
-    Color color;
-    boolean dragging;
-    int boardX, boardY;
-    int pixelX, pixelY;
+    private Color color;
+    private boolean verticalName;
+    private String name;
+    private int logicId;
 
-    int mouseX, mouseY;
-    double startX, startY;
+    private boolean dragging;
+    private int boardX, boardY;
+    private int pixelX, pixelY;
 
-    double xInset, yInset;
-    double doubleWidth, doubleHeight;
+    private int mouseX, mouseY;
+    private double startX, startY;
 
-    Connector[] inputConnectors;
-    Connector[] outputConnectors;
+    private double xInset, yInset;
+    private double doubleWidth, doubleHeight;
 
+    private Connector[] inputConnectors;
+    private Connector[] outputConnectors;
+
+
+    private double maxInputWidth;
+    private double maxOutputWidth;
 
     LogicComponent(Color color) {
-
         inputConnectors = new Connector[4];
         outputConnectors = new Connector[4];
 
+        name = "Logic Component";
 
+
+        verticalName = Math.random() > .5;
         this.color = color;
         setOpaque(false);
         this.dragging = false;
@@ -81,42 +90,16 @@ public class LogicComponent extends JComponent {
         });
     }
 
-    private void initializeConnectors() {
-        int j = (int) (Math.random() * 7) + 1;
-
-        j = (int) Math.pow(10, j);
-        for (int i = 0; i < inputConnectors.length; i++) {
-            inputConnectors[i] = new Connector("x", true);
-        }
-
-        for (int i = 0; i < outputConnectors.length; i++){
-            outputConnectors[i] = new Connector("x" + ((i+1) * j), false);
-        }
-
-    }
-
-    private int minWidth(){
-        Graphics2D g2d = (Graphics2D)getGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
-
-        double maxInputWidth = 0;
-        for (int i = 0; i < inputConnectors.length; i++) {
-            maxInputWidth = Math.max(maxInputWidth, g2d.getFontMetrics().stringWidth(inputConnectors[i].getName()) / 10.0);
-        }
-        double maxOutputWidth = 0;
-        for (int i = 0; i < inputConnectors.length; i++) {
-            maxOutputWidth = Math.max(maxOutputWidth, g2d.getFontMetrics().stringWidth(outputConnectors[i].getName()) / 10.0);
-        }
-        return (int) Math.ceil(maxInputWidth + maxOutputWidth + 2);
-    }
-
     private void addListeners(){
+
         SimStage stage = (SimStage) this.getParent();
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    createChild();
+                }
+                if (e.getButton() == MouseEvent.BUTTON2) destruct();
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 mouseX = e.getXOnScreen();
                 mouseY = e.getYOnScreen();
@@ -134,6 +117,7 @@ public class LogicComponent extends JComponent {
                 dragging = false;
                 snapToBoard();
             }
+
         });
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -171,28 +155,73 @@ public class LogicComponent extends JComponent {
         });
     }
 
-    @Deprecated
-    private boolean isOverlapped(){
-        ArrayList<Component> components =
-                new ArrayList<Component>(Arrays.asList(getParent().getComponents()));
-        components.remove(this);
+    private void initializeConnectors() {
+        for (int i = 0; i < inputConnectors.length; i++) {
+            if(Math.random() > .5) inputConnectors[i] = new Connector("" + i, true);
+        }
 
-        for(Component component : components)
-            if(getBounds().intersects(component.getBounds())) return true;
-        return false;
+        for (int i = 0; i < outputConnectors.length; i++){
+            if(Math.random() > .5) outputConnectors[i] = new Connector("" + i, false);
+        }
     }
-    @Deprecated
-    private boolean isOverlapped(int x, int y){
-        ArrayList<Component> components =
-                new ArrayList<Component>(Arrays.asList(getParent().getComponents()));
-        components.remove(this);
 
-        Rectangle bounds = getBounds();
-        bounds.setLocation(x,y);
+    private String[] calculateDrawableName(){
+        if(!verticalName) return name.split(" ");
+        Graphics2D g2d = (Graphics2D) getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
+        int minHeightInCells = Math.max(inputConnectors.length, outputConnectors.length) * 2;
 
-        for(Component component : components)
-            if(bounds.intersects(component.getBounds())) return true;
-        return false;
+        ArrayList<String> strings = new ArrayList<String>();
+        String name = this.name;
+        while(g2d.getFontMetrics().stringWidth(name) / 10.0 > minHeightInCells) {
+            for (int i = name.length(); i > 0; i--) {
+                if (g2d.getFontMetrics().stringWidth(name.substring(0, i)) / 10.0 > minHeightInCells)
+                    continue;
+                boolean hasSpace = false;
+                for (int j = i - 1; j > 0; j--) {
+                    if (name.charAt(j) == ' ') {
+                        hasSpace = true;
+                        strings.add(name.substring(0, j));
+                        name = name.substring(j + 1);
+                        break;
+                    }
+                }
+                if(!hasSpace) {
+                    strings.add(name.substring(0, i));
+                    name = name.substring(i);
+                    break;
+                }
+            }
+        }
+        if(!name.isEmpty()) strings.add(name);
+        return strings.toArray(String[]::new);
+    }
+
+    private int calculateWidth(){
+        Graphics2D g2d = (Graphics2D) getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
+
+        for (int i = 0; i < inputConnectors.length; i++) {
+            if(inputConnectors[i] == null) continue;
+            maxInputWidth = Math.max(maxInputWidth, g2d.getFontMetrics().stringWidth(inputConnectors[i].getName()) / 10.0);
+        }
+
+        for (int i = 0; i < inputConnectors.length; i++) {
+            if(outputConnectors[i] == null) continue;
+            maxOutputWidth = Math.max(maxOutputWidth, g2d.getFontMetrics().stringWidth(outputConnectors[i].getName()) / 10.0);
+        }
+
+        double maxNameWidth = 0;
+        for(String string : calculateDrawableName()){
+            maxNameWidth = Math.max(maxNameWidth, g2d.getFontMetrics().stringWidth(string) / 10.0);
+        }
+        double nameWidth = verticalName ? calculateDrawableName().length : maxNameWidth;
+
+        return (int) Math.ceil(maxInputWidth + maxOutputWidth + 3 + nameWidth);
     }
 
     private Point pixelToBoard(Point2D.Double pixel){
@@ -260,10 +289,9 @@ public class LogicComponent extends JComponent {
 
 
 
-        int minHeightInCells = inputConnectors.length;
-        minHeightInCells = Math.max(minHeightInCells, outputConnectors.length);
-        doubleHeight = minHeightInCells * cellWidth * 2;
-        doubleWidth = minWidth() * cellWidth + xInset * 2;
+        int minHeightInCells = Math.max(inputConnectors.length, outputConnectors.length) * 2;
+        doubleHeight = minHeightInCells * cellWidth;
+        doubleWidth = calculateWidth() * cellWidth + xInset * 2;
 
         setBounds(
                 (int) (pixelX),
@@ -272,10 +300,12 @@ public class LogicComponent extends JComponent {
                 (int) doubleHeight);
 
         for (int i = 0; i < inputConnectors.length; i++) {
+            if(inputConnectors[i] == null) continue;
             inputConnectors[i].setBounds( xInset, (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
         for (int i = 0; i < outputConnectors.length; i++){
+            if(outputConnectors[i] == null) continue;
             outputConnectors[i].setBounds((doubleWidth - xInset), (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
@@ -289,35 +319,36 @@ public class LogicComponent extends JComponent {
     }
 
     private void destruct(){
-        JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
-        if(pane != null) {
-            pane.remove(this);
-            pane.revalidate();
-            pane.repaint();
+
+        //remove all listeners
+        for (MouseListener ml : getMouseListeners()) {
+            removeMouseListener(ml);
+        }
+        for (MouseMotionListener mml : getMouseMotionListeners()) {
+            removeMouseMotionListener(mml);
+        }
+        for (FocusListener fl : getFocusListeners()) {
+            removeFocusListener(fl);
         }
 
+        getInputMap(JComponent.WHEN_FOCUSED).clear();
+        getActionMap().clear();
+
+        JComponent pane = (JComponent) SwingUtilities.getAncestorOfClass(JComponent.class, this);
+        if(pane == null) return;
+        pane.remove(this);
+        pane.revalidate();
+        pane.repaint();
+        if(hasFocus()) pane.grabFocus();
     }
 
-
-
-
-
-    public void createChild(){
-        JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
-        Point p = getLocationOnScreen();
-        SwingUtilities.convertPointFromScreen(p, pane);
-
-        LogicSelectable logicSelectable = new LogicSelectable(true,color);
-        pane.add(logicSelectable);
-        pane.setLayer(logicSelectable, JLayeredPane.DRAG_LAYER, 0);
-
-        logicSelectable.revalidate();
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                logicSelectable.setStartingLocation(p);
-            }
-        });
-
+    public void createChild() {
+        SimStage simStage = (SimStage) SwingUtilities.getAncestorOfClass(SimStage.class, this);
+        if(simStage == null) return;
+        LogicComponent logicComponent = new LogicComponent(color);
+        simStage.add(logicComponent);
+        logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
+        setTop();
     }
 
 
@@ -341,9 +372,46 @@ public class LogicComponent extends JComponent {
 
         g2d.fill(body);
 
-        for(Connector connector : inputConnectors) connector.paintComponent(g2d);
-        for(Connector connector : outputConnectors) connector.paintComponent(g2d);
+        for(Connector connector : inputConnectors) {
+            if(connector == null) continue;
+            connector.paintComponent(g2d);
+        }
+        for(Connector connector : outputConnectors) {
+            if(connector == null) continue;
+            connector.paintComponent(g2d);
+        }
 
+
+        SimStage simStage = (SimStage) getParent();
+        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont((float)(simStage.cellWidth * 1.375)));
+
+        if(verticalName) {
+            AffineTransform originalContext = g2d.getTransform();
+            AffineTransform at = g2d.getTransform();
+            at.quadrantRotate(1);
+            g2d.setTransform(at);
+
+            String[] strings = calculateDrawableName();
+            double offset = (calculateWidth() - (maxInputWidth + maxOutputWidth + 2 + strings.length)) / 2.0;
+            offset += maxInputWidth + 2;
+            for (int i = 0; i < strings.length; i++) {
+                double topOffset = (doubleHeight - g2d.getFontMetrics().stringWidth(strings[i])) / 2.0;
+                g2d.drawString(strings[i],
+                        (float) (topOffset),
+                        (float) (-(offset + 1.375 * (strings.length - i - 1)) * simStage.cellWidth));
+
+            }
+            g2d.setTransform(originalContext);
+        }
+        else {
+            String[] strings = calculateDrawableName();
+            double offset = (doubleHeight - (g2d.getFontMetrics().getHeight() * strings.length)) / 2;
+            for (int i = 0; i < strings.length; i++) {
+                double sideOffset = (doubleWidth - g2d.getFontMetrics().stringWidth(strings[i])) / 2.0;
+                g2d.drawString(strings[i],
+                        (float) (sideOffset),
+                        (float) (offset + 1.375 * (i + 1) * simStage.cellWidth));
+            }
+        }
     }
-
 }

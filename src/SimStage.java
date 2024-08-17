@@ -12,11 +12,13 @@ public class SimStage extends JPanel {
     double viewPortOffsetX, viewPortOffsetY;
     double cellWidth;
 
-    private ArrayList<Component> components;
+    boolean dragging;
+
     SimStage() {
         super();
+
+        dragging = false;
         cellWidth = Constants.DEFAULT_CELL_WIDTH;
-        components = new ArrayList<Component>();
         setPreferredSize(new Dimension(Constants.DESIRED_VIEWPORT_WIDTH, Constants.DESIRED_VIEWPORT_HEIGHT));
         setBackground(Constants.BACKGROUND_COLOR);
         setLayout(null);
@@ -29,11 +31,55 @@ public class SimStage extends JPanel {
 
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
+
+        inputMap.put(KeyStroke.getKeyStroke("UP"),"up");
+        inputMap.put(KeyStroke.getKeyStroke('w'),"up");
+
+        inputMap.put(KeyStroke.getKeyStroke("DOWN"),"down");
+        inputMap.put(KeyStroke.getKeyStroke('s'),"down");
+
+        inputMap.put(KeyStroke.getKeyStroke("LEFT"),"left");
+        inputMap.put(KeyStroke.getKeyStroke('a'),"left");
+
+        inputMap.put(KeyStroke.getKeyStroke("RIGHT"),"right");
+        inputMap.put(KeyStroke.getKeyStroke('d'),"right");
+
+
+
         ActionMap actionMap = getActionMap();
         actionMap.put("escape", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 grabFocus();
+            }
+        });
+
+        actionMap.put("up", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                viewPortOffsetY += Constants.PAN_SPEED_FACTOR / cellWidth;
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                repaint();
+            }
+        });
+        actionMap.put("down", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                viewPortOffsetY -= Constants.PAN_SPEED_FACTOR / cellWidth;
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                repaint();
+            }
+        });
+        actionMap.put("left", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                viewPortOffsetX += Constants.PAN_SPEED_FACTOR / cellWidth;
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                repaint();
+            }
+        });
+        actionMap.put("right", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                viewPortOffsetX -= Constants.PAN_SPEED_FACTOR / cellWidth;
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                repaint();
             }
         });
 
@@ -48,26 +94,35 @@ public class SimStage extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 grabFocus();
-                if(e.getButton() == MouseEvent.BUTTON1) {
-                    mouseX = e.getXOnScreen();
-                    mouseY = e.getYOnScreen();
+                if(e.getButton() != MouseEvent.BUTTON1) return;
+                dragging = true;
 
-                    startX = viewPortOffsetX;
-                    startY = viewPortOffsetY;
-                }
+                mouseX = e.getXOnScreen();
+                mouseY = e.getYOnScreen();
+
+                startX = viewPortOffsetX;
+                startY = viewPortOffsetY;
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if(e.getButton() != MouseEvent.BUTTON1) return;
+                dragging = false;
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if(!dragging) return;
                 double deltaX = (e.getXOnScreen() - mouseX) / cellWidth;
                 double deltaY = (e.getYOnScreen() - mouseY) / cellWidth;
 
                 viewPortOffsetX = startX + deltaX;
                 viewPortOffsetY = startY + deltaY;
 
-                for(Component c : components) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
                 repaint();
             }
 
@@ -77,7 +132,7 @@ public class SimStage extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 centeredZoom(e.getPreciseWheelRotation());
-                for(Component c : components) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
             }
         });
 
@@ -87,7 +142,7 @@ public class SimStage extends JPanel {
                 double deltaHeight = (e.getComponent().getHeight() - oldHeight) / cellWidth;
 
                 viewPortOffsetY = viewPortOffsetY + deltaHeight;
-                for(Component c : components) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
 
                 oldHeight = e.getComponent().getHeight();
                 repaint();
@@ -96,11 +151,7 @@ public class SimStage extends JPanel {
     }
 
     public void setTop(Component component) {
-        components.remove(component);
-        components.addLast(component);
-        for(Component c : components){
-            add(c, components.size() - components.indexOf(component) - 1);
-        }
+        add(component, 0);
         repaint();
     }
 

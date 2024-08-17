@@ -15,9 +15,9 @@ public class BottomPanel extends JTabbedPane {
         UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
         this.getUI();
-        add("One", new ComponentSelector());
-        add("Two", new ComponentSelector());
-        add("Three", new ComponentSelector());
+        add("Basic", new ComponentSelector());
+        add("Custom", new ComponentSelector());
+        add("Settings", new ComponentSelector());
 
         setTabPlacement(JTabbedPane.TOP);
         setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
