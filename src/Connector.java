@@ -10,7 +10,7 @@ public class Connector implements Serializable {
     private ConnectorAttributes attributes;
 
     public Connector(String name, boolean isInput){
-        attributes = new ConnectorAttributes(name, isInput,hashCode());
+        attributes = new ConnectorAttributes(hashCode(), name, isInput);
     }
 
     public Connector(ConnectorAttributes attributes){

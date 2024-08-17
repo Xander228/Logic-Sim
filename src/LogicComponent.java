@@ -10,10 +10,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class LogicComponent extends JComponent {
-    private Color color;
-    private boolean verticalName;
-    private String name;
-    private int logicId;
+    LogicAttributes attributes;
+
+    public ArrayList<Connector> inputConnectors;
+    public ArrayList<Connector> outputConnectors;
 
     private boolean dragging;
     private int boardX, boardY;
@@ -25,22 +25,23 @@ public class LogicComponent extends JComponent {
     private double xInset, yInset;
     private double doubleWidth, doubleHeight;
 
-    private Connector[] inputConnectors;
-    private Connector[] outputConnectors;
-
-
     private double maxInputWidth;
     private double maxOutputWidth;
 
     LogicComponent(Color color) {
-        inputConnectors = new Connector[4];
-        outputConnectors = new Connector[4];
+        attributes = new LogicAttributes(
+                hashCode(),
+                "Logic Component",
+                Math.random() > .5,
+                color,
+                new ArrayList<Connector>(),
+                new ArrayList<Connector>());
+    }
 
-        name = "Logic Component";
 
+    LogicComponent(LogicAttributes attributes) {
+        this.attributes = attributes;
 
-        verticalName = Math.random() > .5;
-        this.color = color;
         setOpaque(false);
         this.dragging = false;
         setLayout(null);
@@ -156,25 +157,28 @@ public class LogicComponent extends JComponent {
     }
 
     private void initializeConnectors() {
-        for (int i = 0; i < inputConnectors.length; i++) {
-            if(Math.random() > .5) inputConnectors[i] = new Connector("" + i, true);
+        for (int i = 0; i < 4; i++) {
+            inputConnectors.add(null);
+            if(Math.random() > .5) inputConnectors.set(i, new Connector("" + i, true));
+
         }
 
-        for (int i = 0; i < outputConnectors.length; i++){
-            if(Math.random() > .5) outputConnectors[i] = new Connector("" + i, false);
+        for (int i = 0; i < 4; i++){
+            outputConnectors.add(null);
+            if(Math.random() > .5) outputConnectors.set(i, new Connector("" + i, false));
         }
     }
 
     private String[] calculateDrawableName(){
-        if(!verticalName) return name.split(" ");
+        if(!attributes.verticalName) return attributes.name.split(" ");
         Graphics2D g2d = (Graphics2D) getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
-        int minHeightInCells = Math.max(inputConnectors.length, outputConnectors.length) * 2;
+        int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
 
         ArrayList<String> strings = new ArrayList<String>();
-        String name = this.name;
+        String name = attributes.name;
         while(g2d.getFontMetrics().stringWidth(name) / 10.0 > minHeightInCells) {
             for (int i = name.length(); i > 0; i--) {
                 if (g2d.getFontMetrics().stringWidth(name.substring(0, i)) / 10.0 > minHeightInCells)
@@ -205,21 +209,23 @@ public class LogicComponent extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
 
-        for (int i = 0; i < inputConnectors.length; i++) {
-            if(inputConnectors[i] == null) continue;
-            maxInputWidth = Math.max(maxInputWidth, g2d.getFontMetrics().stringWidth(inputConnectors[i].getName()) / 10.0);
+        for (int i = 0; i < inputConnectors.size(); i++) {
+            if(inputConnectors.get(i) == null) continue;
+            maxInputWidth = Math.max(maxInputWidth,
+                    g2d.getFontMetrics().stringWidth(inputConnectors.get(i).getName()) / 10.0);
         }
 
-        for (int i = 0; i < inputConnectors.length; i++) {
-            if(outputConnectors[i] == null) continue;
-            maxOutputWidth = Math.max(maxOutputWidth, g2d.getFontMetrics().stringWidth(outputConnectors[i].getName()) / 10.0);
+        for (int i = 0; i < outputConnectors.size(); i++) {
+            if(outputConnectors.get(i) == null) continue;
+            maxOutputWidth = Math.max(maxOutputWidth,
+                    g2d.getFontMetrics().stringWidth(outputConnectors.get(i).getName()) / 10.0);
         }
 
         double maxNameWidth = 0;
         for(String string : calculateDrawableName()){
             maxNameWidth = Math.max(maxNameWidth, g2d.getFontMetrics().stringWidth(string) / 10.0);
         }
-        double nameWidth = verticalName ? calculateDrawableName().length : maxNameWidth;
+        double nameWidth = attributes.verticalName ? calculateDrawableName().length : maxNameWidth;
 
         return (int) Math.ceil(maxInputWidth + maxOutputWidth + 3 + nameWidth);
     }
@@ -289,7 +295,7 @@ public class LogicComponent extends JComponent {
 
 
 
-        int minHeightInCells = Math.max(inputConnectors.length, outputConnectors.length) * 2;
+        int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
         doubleHeight = minHeightInCells * cellWidth;
         doubleWidth = calculateWidth() * cellWidth + xInset * 2;
 
@@ -299,14 +305,14 @@ public class LogicComponent extends JComponent {
                 (int) doubleWidth,
                 (int) doubleHeight);
 
-        for (int i = 0; i < inputConnectors.length; i++) {
-            if(inputConnectors[i] == null) continue;
-            inputConnectors[i].setBounds( xInset, (cellWidth * (i * 2 + 1) ), cellWidth);
+        for (int i = 0; i < inputConnectors.size(); i++) {
+            if(inputConnectors.get(i) == null) continue;
+            inputConnectors.get(i).setBounds( xInset, (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
-        for (int i = 0; i < outputConnectors.length; i++){
-            if(outputConnectors[i] == null) continue;
-            outputConnectors[i].setBounds((doubleWidth - xInset), (cellWidth * (i * 2 + 1) ), cellWidth);
+        for (int i = 0; i < outputConnectors.size(); i++){
+            if(outputConnectors.get(i) == null) continue;
+            outputConnectors.get(i).setBounds((doubleWidth - xInset), (cellWidth * (i * 2 + 1) ), cellWidth);
         }
 
         repaint();
@@ -345,7 +351,7 @@ public class LogicComponent extends JComponent {
     public void createChild() {
         SimStage simStage = (SimStage) SwingUtilities.getAncestorOfClass(SimStage.class, this);
         if(simStage == null) return;
-        LogicComponent logicComponent = new LogicComponent(color);
+        LogicComponent logicComponent = new LogicComponent(attributes.color);
         simStage.add(logicComponent);
         logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
         setTop();
@@ -362,7 +368,7 @@ public class LogicComponent extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
-        g2d.setColor(color);
+        g2d.setColor(attributes.color);
 
         Shape body = new Rectangle2D.Double(
                 xInset,
@@ -385,7 +391,7 @@ public class LogicComponent extends JComponent {
         SimStage simStage = (SimStage) getParent();
         g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont((float)(simStage.cellWidth * 1.375)));
 
-        if(verticalName) {
+        if(attributes.verticalName) {
             AffineTransform originalContext = g2d.getTransform();
             AffineTransform at = g2d.getTransform();
             at.quadrantRotate(1);
