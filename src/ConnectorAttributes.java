@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.Serializable;
 
 public class ConnectorAttributes implements Serializable {

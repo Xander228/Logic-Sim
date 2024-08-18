@@ -11,13 +11,13 @@ public class LogicAttributes implements Serializable {
     public ArrayList<ConnectorAttributes> inputAttributes;
     public ArrayList<ConnectorAttributes> outputAttributes;
 
-    public LogicAttributes(int logicId, String name, boolean verticalName, Color color, ArrayList<Connector> inputConnectors, ArrayList<Connector> outputConnectors){
+    public LogicAttributes(int logicId, String name, boolean verticalName, Color color, ArrayList<ConnectorAttributes> inputAttributes, ArrayList<ConnectorAttributes> outputAttributes){
         this.logicId = logicId;
         this.name = name;
         this.verticalName = verticalName;
         this.color = color;
-        this.inputAttributes = new ArrayList<Connector>(inputConnectors);
-        this.outputAttributes = new ArrayList<Connector>(outputConnectors);
+        this.inputAttributes = new ArrayList<>(inputAttributes);
+        this.outputAttributes = new ArrayList<>(outputAttributes);
     }
 
 

@@ -28,25 +28,17 @@ public class LogicComponent extends JComponent {
     private double maxInputWidth;
     private double maxOutputWidth;
 
-    LogicComponent(Color color) {
-        attributes = new LogicAttributes(
-                hashCode(),
-                "Logic Component",
-                Math.random() > .5,
-                color,
-                new ArrayList<Connector>(),
-                new ArrayList<Connector>());
-    }
-
 
     LogicComponent(LogicAttributes attributes) {
         this.attributes = attributes;
 
+        this.inputConnectors = new ArrayList<>();
+        this.outputConnectors = new ArrayList<>();
+        initializeConnectors();
+
         setOpaque(false);
         this.dragging = false;
         setLayout(null);
-
-        initializeConnectors();
 
         InputMap inputMap = getInputMap(JComponent.WHEN_FOCUSED);
         inputMap.put(KeyStroke.getKeyStroke("UP"),"up");
@@ -157,15 +149,14 @@ public class LogicComponent extends JComponent {
     }
 
     private void initializeConnectors() {
-        for (int i = 0; i < 4; i++) {
-            inputConnectors.add(null);
-            if(Math.random() > .5) inputConnectors.set(i, new Connector("" + i, true));
-
+        for (ConnectorAttributes connectorAttribute : attributes.inputAttributes) {
+            if(connectorAttribute == null) inputConnectors.add(null);
+            else inputConnectors.add(new Connector(connectorAttribute));
         }
 
-        for (int i = 0; i < 4; i++){
-            outputConnectors.add(null);
-            if(Math.random() > .5) outputConnectors.set(i, new Connector("" + i, false));
+        for (ConnectorAttributes connectorAttribute : attributes.outputAttributes) {
+            if(connectorAttribute == null) outputConnectors.add(null);
+            else outputConnectors.add(new Connector(connectorAttribute));
         }
     }
 
@@ -209,16 +200,16 @@ public class LogicComponent extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
 
-        for (int i = 0; i < inputConnectors.size(); i++) {
-            if(inputConnectors.get(i) == null) continue;
+        for (Connector inputConnector : inputConnectors) {
+            if (inputConnector == null) continue;
             maxInputWidth = Math.max(maxInputWidth,
-                    g2d.getFontMetrics().stringWidth(inputConnectors.get(i).getName()) / 10.0);
+                    g2d.getFontMetrics().stringWidth(inputConnector.getName()) / 10.0);
         }
 
-        for (int i = 0; i < outputConnectors.size(); i++) {
-            if(outputConnectors.get(i) == null) continue;
+        for (Connector outputConnector : outputConnectors) {
+            if (outputConnector == null) continue;
             maxOutputWidth = Math.max(maxOutputWidth,
-                    g2d.getFontMetrics().stringWidth(outputConnectors.get(i).getName()) / 10.0);
+                    g2d.getFontMetrics().stringWidth(outputConnector.getName()) / 10.0);
         }
 
         double maxNameWidth = 0;
@@ -351,7 +342,7 @@ public class LogicComponent extends JComponent {
     public void createChild() {
         SimStage simStage = (SimStage) SwingUtilities.getAncestorOfClass(SimStage.class, this);
         if(simStage == null) return;
-        LogicComponent logicComponent = new LogicComponent(attributes.color);
+        LogicComponent logicComponent = new LogicComponent(attributes);
         simStage.add(logicComponent);
         logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
         setTop();
