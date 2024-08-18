@@ -22,18 +22,10 @@ public class LogicComponent extends JComponent {
     private int mouseX, mouseY;
     private double startX, startY;
 
-    private double xInset, yInset;
-    private double doubleWidth, doubleHeight;
-
-    private double maxInputWidth;
-    private double maxOutputWidth;
-
 
     LogicComponent(LogicAttributes attributes) {
         this.attributes = attributes;
 
-        this.inputConnectors = new ArrayList<>();
-        this.outputConnectors = new ArrayList<>();
         initializeConnectors();
 
         setOpaque(false);
@@ -149,90 +141,31 @@ public class LogicComponent extends JComponent {
     }
 
     private void initializeConnectors() {
+        this.inputConnectors = new ArrayList<>();
         for (ConnectorAttributes connectorAttribute : attributes.inputAttributes) {
             if(connectorAttribute == null) inputConnectors.add(null);
             else inputConnectors.add(new Connector(connectorAttribute));
         }
 
+        this.outputConnectors = new ArrayList<>();
         for (ConnectorAttributes connectorAttribute : attributes.outputAttributes) {
             if(connectorAttribute == null) outputConnectors.add(null);
             else outputConnectors.add(new Connector(connectorAttribute));
         }
     }
 
-    private String[] calculateDrawableName(){
-        if(!attributes.verticalName) return attributes.name.split(" ");
-        Graphics2D g2d = (Graphics2D) getGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
-        int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
-
-        ArrayList<String> strings = new ArrayList<String>();
-        String name = attributes.name;
-        while(g2d.getFontMetrics().stringWidth(name) / 10.0 > minHeightInCells) {
-            for (int i = name.length(); i > 0; i--) {
-                if (g2d.getFontMetrics().stringWidth(name.substring(0, i)) / 10.0 > minHeightInCells)
-                    continue;
-                boolean hasSpace = false;
-                for (int j = i - 1; j > 0; j--) {
-                    if (name.charAt(j) == ' ') {
-                        hasSpace = true;
-                        strings.add(name.substring(0, j));
-                        name = name.substring(j + 1);
-                        break;
-                    }
-                }
-                if(!hasSpace) {
-                    strings.add(name.substring(0, i));
-                    name = name.substring(i);
-                    break;
-                }
-            }
-        }
-        if(!name.isEmpty()) strings.add(name);
-        return strings.toArray(String[]::new);
-    }
-
-    private int calculateWidth(){
-        Graphics2D g2d = (Graphics2D) getGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont(13.75f));
-
-        for (Connector inputConnector : inputConnectors) {
-            if (inputConnector == null) continue;
-            maxInputWidth = Math.max(maxInputWidth,
-                    g2d.getFontMetrics().stringWidth(inputConnector.getName()) / 10.0);
-        }
-
-        for (Connector outputConnector : outputConnectors) {
-            if (outputConnector == null) continue;
-            maxOutputWidth = Math.max(maxOutputWidth,
-                    g2d.getFontMetrics().stringWidth(outputConnector.getName()) / 10.0);
-        }
-
-        double maxNameWidth = 0;
-        for(String string : calculateDrawableName()){
-            maxNameWidth = Math.max(maxNameWidth, g2d.getFontMetrics().stringWidth(string) / 10.0);
-        }
-        double nameWidth = attributes.verticalName ? calculateDrawableName().length : maxNameWidth;
-
-        return (int) Math.ceil(maxInputWidth + maxOutputWidth + 3 + nameWidth);
-    }
-
     private Point pixelToBoard(Point2D.Double pixel){
         SimStage simStage = (SimStage) getParent();
         return new Point(
-                (int) Math.round(pixel.getX() / simStage.cellWidth - simStage.viewPortOffsetX),
-                (int) Math.round(pixel.getY() / simStage.cellWidth - simStage.viewPortOffsetY));
+                (int) Math.round(pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX),
+                (int) Math.round(pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY));
     }
 
     private Point2D.Double boardToPixel(Point board){
         SimStage simStage = (SimStage) getParent();
         return new Point2D.Double(
-                (board.getX() + simStage.viewPortOffsetX) * simStage.cellWidth,
-                (board.getY() + simStage.viewPortOffsetY) * simStage.cellWidth);
+                (board.getX() + simStage.viewPortOffsetX) * SimStage.cellWidth,
+                (board.getY() + simStage.viewPortOffsetY) * SimStage.cellWidth);
     }
 
     public void snapToBoard(){
@@ -278,17 +211,12 @@ public class LogicComponent extends JComponent {
     }
 
     private void updateLocation(){
-        SimStage simStage = (SimStage) getParent();
-        double cellWidth = simStage.cellWidth;
-
-        xInset = cellWidth ;
-        yInset = cellWidth * .1;
-
-
+        double cellWidth = SimStage.cellWidth;
 
         int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
-        doubleHeight = minHeightInCells * cellWidth;
-        doubleWidth = calculateWidth() * cellWidth + xInset * 2;
+        double doubleHeight = minHeightInCells * cellWidth;
+        int minWidthInCells = (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)) + 2;
+        double doubleWidth = minWidthInCells * cellWidth;
 
         setBounds(
                 (int) (pixelX),
@@ -296,14 +224,16 @@ public class LogicComponent extends JComponent {
                 (int) doubleWidth,
                 (int) doubleHeight);
 
+        boolean isEven = ((minHeightInCells / 2) - inputConnectors.size()) % 2 == 0;
         for (int i = 0; i < inputConnectors.size(); i++) {
             if(inputConnectors.get(i) == null) continue;
-            inputConnectors.get(i).setBounds( xInset, (cellWidth * (i * 2 + 1) ), cellWidth);
+            inputConnectors.get(i).setBounds(cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
+        isEven = ((minHeightInCells / 2) - outputConnectors.size()) % 2 == 0;
         for (int i = 0; i < outputConnectors.size(); i++){
             if(outputConnectors.get(i) == null) continue;
-            outputConnectors.get(i).setBounds((doubleWidth - xInset), (cellWidth * (i * 2 + 1) ), cellWidth);
+            outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
         repaint();
@@ -345,6 +275,7 @@ public class LogicComponent extends JComponent {
         LogicComponent logicComponent = new LogicComponent(attributes);
         simStage.add(logicComponent);
         logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
+        logicComponent.setTop();
         setTop();
     }
 
@@ -352,63 +283,6 @@ public class LogicComponent extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
-        g2d.setColor(attributes.color);
-
-        Shape body = new Rectangle2D.Double(
-                xInset,
-                yInset,
-                doubleWidth - 2 * xInset,
-                doubleHeight - 2 * yInset);
-
-        g2d.fill(body);
-
-        for(Connector connector : inputConnectors) {
-            if(connector == null) continue;
-            connector.paintComponent(g2d);
-        }
-        for(Connector connector : outputConnectors) {
-            if(connector == null) continue;
-            connector.paintComponent(g2d);
-        }
-
-
-        SimStage simStage = (SimStage) getParent();
-        g2d.setFont(new Font("Arial", Font.BOLD, 12).deriveFont((float)(simStage.cellWidth * 1.375)));
-
-        if(attributes.verticalName) {
-            AffineTransform originalContext = g2d.getTransform();
-            AffineTransform at = g2d.getTransform();
-            at.quadrantRotate(1);
-            g2d.setTransform(at);
-
-            String[] strings = calculateDrawableName();
-            double offset = (calculateWidth() - (maxInputWidth + maxOutputWidth + 2 + strings.length)) / 2.0;
-            offset += maxInputWidth + 2;
-            for (int i = 0; i < strings.length; i++) {
-                double topOffset = (doubleHeight - g2d.getFontMetrics().stringWidth(strings[i])) / 2.0;
-                g2d.drawString(strings[i],
-                        (float) (topOffset),
-                        (float) (-(offset + 1.375 * (strings.length - i - 1)) * simStage.cellWidth));
-
-            }
-            g2d.setTransform(originalContext);
-        }
-        else {
-            String[] strings = calculateDrawableName();
-            double offset = (doubleHeight - (g2d.getFontMetrics().getHeight() * strings.length)) / 2;
-            for (int i = 0; i < strings.length; i++) {
-                double sideOffset = (doubleWidth - g2d.getFontMetrics().stringWidth(strings[i])) / 2.0;
-                g2d.drawString(strings[i],
-                        (float) (sideOffset),
-                        (float) (offset + 1.375 * (i + 1) * simStage.cellWidth));
-            }
-        }
+        LogicDisplayController.paint(g, this, inputConnectors, outputConnectors, attributes);
     }
 }

@@ -59,6 +59,7 @@ public class MainContainer extends JLayeredPane {
     }
 
     public void addToBoard(Component component){
+
         simStage.add(component);
     }
 }

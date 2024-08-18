@@ -4,24 +4,50 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class LogicSelectable extends JComponent {
-    Color color;
+    LogicAttributes attributes;
+
+    public ArrayList<Connector> inputConnectors;
+    public ArrayList<Connector> outputConnectors;
+
     boolean draggable;
     int mouseX, mouseY;
     int startingX, startingY;
+    int pixelX, pixelY;
 
     MouseAdapter mouseAdapter;
     MouseMotionAdapter mouseMotionAdapter;
 
-    LogicSelectable(Boolean draggable, Color color) {
+    LogicSelectable(Color color) {
+        ArrayList<ConnectorAttributes> inputAttributes = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            inputAttributes.add(null);
+            if(Math.random() > .5) inputAttributes.set(i, new ConnectorAttributes(i,"" + i, true));
+        }
+
+        ArrayList<ConnectorAttributes> outputAttributes = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            outputAttributes.add(null);
+            if(Math.random() > .5) outputAttributes.set(i, new ConnectorAttributes(i,"" + i, false));
+        }
+
+        this.attributes =  new LogicAttributes(
+                hashCode(),
+                "Logic Component",
+                Math.random() > .5,
+                color,
+                inputAttributes,
+                outputAttributes);
+
+        this.draggable = false;
 
         setPreferredSize(new Dimension(100,40));
         setMaximumSize(new Dimension(100,40));
         setBorder(new MatteBorder(2,2,2,2,Color.BLACK));
-        this.color = color;
-        this.draggable = draggable;
         Point p = MouseInfo.getPointerInfo().getLocation();
         mouseX = p.x;
         mouseY = p.y;
@@ -33,6 +59,40 @@ public class LogicSelectable extends JComponent {
                 addListeners();
             }
         });
+    }
+
+    private LogicSelectable(boolean draggable, LogicAttributes attributes) {
+        this.attributes = attributes;
+        this.draggable = draggable;
+        if(draggable) initializeConnectors();
+
+        setPreferredSize(new Dimension(100,40));
+        setMaximumSize(new Dimension(100,40));
+        if(draggable) setBorder(new MatteBorder(2,2,2,2,Color.CYAN));
+        else setBorder(new MatteBorder(2,2,2,2,Color.BLACK));
+        Point p = MouseInfo.getPointerInfo().getLocation();
+        mouseX = p.x;
+        mouseY = p.y;
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                addListeners();
+            }
+        });
+    }
+
+    private void initializeConnectors() {
+        this.inputConnectors = new ArrayList<>();
+        for (ConnectorAttributes connectorAttribute : attributes.inputAttributes) {
+            if(connectorAttribute == null) inputConnectors.add(null);
+            else inputConnectors.add(new Connector(connectorAttribute));
+        }
+
+        this.outputConnectors = new ArrayList<>();
+        for (ConnectorAttributes connectorAttribute : attributes.outputAttributes) {
+            if(connectorAttribute == null) outputConnectors.add(null);
+            else outputConnectors.add(new Connector(connectorAttribute));
+        }
     }
 
     private void addListeners(){
@@ -52,7 +112,12 @@ public class LogicSelectable extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 if (!draggable) return;
-                createComponent();
+                if(e.getX() > Constants.BORDER_WIDTH &&
+                        e.getX() < pane.getWidth() - Constants.BORDER_WIDTH &&
+                        e.getY() > Constants.BORDER_WIDTH * 5 + Constants.BUTTON_PANEL_HEIGHT * 2 - pane.getHeight() &&
+                        e.getY() < -(Constants.BORDER_WIDTH))
+                    createComponent();
+
                 destruct();
             }
         };
@@ -65,13 +130,9 @@ public class LogicSelectable extends JComponent {
 
                 int deltaX = eventX - mouseX;
                 int deltaY = eventY - mouseY;
-                int newX = startingX + deltaX;
-                int newY = startingY + deltaY;
-                newX = Math.min(pane.getWidth() - getWidth() - Constants.BORDER_WIDTH,
-                        Math.max(Constants.BORDER_WIDTH, newX));
-                newY = Math.min(pane.getHeight() - getHeight() - Constants.BORDER_WIDTH,
-                        Math.max(2 * Constants.BORDER_WIDTH + Constants.BUTTON_PANEL_HEIGHT, newY));
-                setLocation(newX, newY);
+                pixelX = startingX + deltaX;
+                pixelY = startingY + deltaY;
+                updateLocation();
                 pane.repaint();
             }
 
@@ -87,14 +148,44 @@ public class LogicSelectable extends JComponent {
         return (componentSelector.checkIfSelected());
     }
 
-    public void setStartingLocation(Point p){
-        startingX = p.x;
-        startingY = p.y;
-        setLocation(startingX,startingY);
-        repaint();
+    private void setStartingLocation(int x, int y){
+        updateLocation();
+        startingX = x - getWidth() / 2;
+        startingY = y - getHeight() / 2;
+        pixelX = startingX;
+        pixelY = startingY;
+        updateLocation();
     }
 
 
+    private void updateLocation(){
+        double cellWidth = SimStage.cellWidth;
+
+        int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
+        double doubleHeight = minHeightInCells * cellWidth;
+        int minWidthInCells = (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)) + 2;
+        double doubleWidth = minWidthInCells * cellWidth;
+
+        setBounds(
+                (int) (pixelX),
+                (int) (pixelY),
+                (int) doubleWidth,
+                (int) doubleHeight);
+
+        boolean isEven = ((minHeightInCells / 2) - inputConnectors.size()) % 2 == 0;
+        for (int i = 0; i < inputConnectors.size(); i++) {
+            if(inputConnectors.get(i) == null) continue;
+            inputConnectors.get(i).setBounds(cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+        }
+
+        isEven = ((minHeightInCells / 2) - outputConnectors.size()) % 2 == 0;
+        for (int i = 0; i < outputConnectors.size(); i++){
+            if(outputConnectors.get(i) == null) continue;
+            outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+        }
+
+        repaint();
+    }
 
     private void destruct(){
         Container pane = getParent();
@@ -111,25 +202,7 @@ public class LogicSelectable extends JComponent {
         MainContainer mainContainer = (MainContainer) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
         if(mainContainer == null) return;
 
-        ArrayList<ConnectorAttributes> inputAttributes = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            inputAttributes.add(null);
-            if(Math.random() > .5) inputAttributes.set(i, new ConnectorAttributes(i,"" + i, true));
-        }
-
-        ArrayList<ConnectorAttributes> outputAttributes = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            outputAttributes.add(null);
-            if(Math.random() > .5) outputAttributes.set(i, new ConnectorAttributes(i,"" + i, true));
-        }
-
-        LogicComponent logicComponent = new LogicComponent(new LogicAttributes(
-                hashCode(),
-                "Logic Component",
-                Math.random() > .5,
-                color,
-                inputAttributes,
-                outputAttributes));
+        LogicComponent logicComponent = new LogicComponent(attributes);
 
         mainContainer.addToBoard(logicComponent);
         logicComponent.setBoardLocationFromScreen(getLocationOnScreen());
@@ -148,15 +221,13 @@ public class LogicSelectable extends JComponent {
 
 
     public void createChild(){
-        System.out.println("Creating child");
         JLayeredPane pane = (JLayeredPane) SwingUtilities.getAncestorOfClass(JLayeredPane.class, this);
-        Point p = getLocationOnScreen();
+        Point p = MouseInfo.getPointerInfo().getLocation();
         SwingUtilities.convertPointFromScreen(p, pane);
 
-        LogicSelectable logicSelectable = new LogicSelectable(true,color);
-        logicSelectable.setBounds(p.x, p.y, getWidth(), getHeight());
-        logicSelectable.setStartingLocation(p);
+        LogicSelectable logicSelectable = new LogicSelectable(true, attributes);
         pane.add(logicSelectable);
+        logicSelectable.setStartingLocation(p.x, p.y);
         pane.setLayer(logicSelectable, JLayeredPane.DRAG_LAYER, 0);
     }
 
@@ -164,7 +235,14 @@ public class LogicSelectable extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(color);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        Graphics2D g2d = LogicDisplayController.getGraphics2D(g);
+
+        if(!draggable){
+            g2d.setColor(attributes.color);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+            return;
+        }
+
+        LogicDisplayController.paint(g, this, inputConnectors, outputConnectors, attributes);
     }
 }

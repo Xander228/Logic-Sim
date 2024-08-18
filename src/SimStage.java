@@ -6,11 +6,12 @@ import java.util.ArrayList;
 
 
 public class SimStage extends JPanel {
+    public static double cellWidth;
+
     int oldHeight;
     double mouseX, mouseY;
     double startX, startY;
     double viewPortOffsetX, viewPortOffsetY;
-    double cellWidth;
 
     boolean dragging;
 
@@ -156,8 +157,7 @@ public class SimStage extends JPanel {
     }
 
     public void centeredZoom(double zoomFactor) {
-        Point p = MouseInfo.getPointerInfo().getLocation();
-        SwingUtilities.convertPointFromScreen(p, this);
+        Point p = getMousePosition();
         double oldCellWidth = cellWidth;
         cellWidth -= (Constants.ZOOM_SCALE_FACTOR * cellWidth * zoomFactor);
         cellWidth = Math.clamp(cellWidth, Constants.MIN_CELL_WIDTH, Constants.MAX_CELL_WIDTH);

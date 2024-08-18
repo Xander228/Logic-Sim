@@ -13,14 +13,25 @@ import static javax.swing.UIManager.*;
 
 public class MainFrame extends JFrame {
 
-    public static MainFrame frame;
-
-
     public MainFrame() {
         super();
 
-        MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
+        UIManager.put("TabbedPane.background", Constants.PRIMARY_COLOR);
+        UIManager.put("TabbedPane.darkShadow", Constants.BACKGROUND_COLOR);
+        UIManager.put("TabbedPane.foreground", Constants.BACKGROUND_COLOR);
+        UIManager.put("TabbedPane.light", Color.GRAY);
+        UIManager.put("TabbedPane.selectHighlight", Color.WHITE);
+        UIManager.put("TabbedPane.selected", Color.GRAY);
+        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
+        UIManager.put("Button.background", Constants.PRIMARY_COLOR);
+        UIManager.put("Button.foreground", Constants.BACKGROUND_COLOR);
+        UIManager.put("Button.font", new Font("Arial", Font.BOLD, 16));
+        UIManager.put("Button.border", BorderFactory.createMatteBorder(2, 2, 2, 2, Constants.ACCENT_COLOR));
+        UIManager.put("Button.margin", new Insets(10, 20, 10, 20));
+
+
+        MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
         setTitle("Logic Sim");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -46,7 +57,7 @@ public class MainFrame extends JFrame {
     public static void main(String[] args){
         EventQueue.invokeLater(new Runnable(){
             public void run(){
-                frame = new MainFrame();
+                new MainFrame();
             }
         });
     }

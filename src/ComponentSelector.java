@@ -13,7 +13,7 @@ public class ComponentSelector extends JPanel {
         selectorSubPanel.setBackground(Constants.BACKGROUND_COLOR);
 
         for(int i = 0; i < 7; i++)
-            selectorSubPanel.add(new LogicSelectable(false,randomColor()));
+            selectorSubPanel.add(new LogicSelectable(randomColor()));
         add(selectorSubPanel);
 
 

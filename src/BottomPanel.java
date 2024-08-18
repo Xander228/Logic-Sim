@@ -6,18 +6,9 @@ import java.awt.event.MouseEvent;
 public class BottomPanel extends JTabbedPane {
 
     public BottomPanel() {
-        UIManager.put("TabbedPane.background", Constants.PRIMARY_COLOR);
-        UIManager.put("TabbedPane.darkShadow", Constants.BACKGROUND_COLOR);
-        UIManager.put("TabbedPane.foreground", Constants.BACKGROUND_COLOR);
-        UIManager.put("TabbedPane.light", Color.GRAY);
-        UIManager.put("TabbedPane.selectHighlight", Color.WHITE);
-        UIManager.put("TabbedPane.selected", Color.GRAY);
-        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
-
-        this.getUI();
         add("Basic", new ComponentSelector());
         add("Custom", new ComponentSelector());
-        add("Settings", new ComponentSelector());
+        add("Settings", new SettingsPanel());
 
         setTabPlacement(JTabbedPane.TOP);
         setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

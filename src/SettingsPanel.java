@@ -8,19 +8,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class ButtonPanel extends JPanel {
+public class SettingsPanel extends JPanel {
 
-    ButtonPanel(){
-
+    SettingsPanel(){
+        super();
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(0, Constants.BUTTON_PANEL_HEIGHT));
-
         setBackground(Constants.BACKGROUND_COLOR);
-
-        //todo
-        //home
-        //drag to select
-
 
         class GameButton extends JButton {
             GameButton(String text){
@@ -34,7 +28,6 @@ public class ButtonPanel extends JPanel {
         start.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 //GamePanel.boardManager.startTimer();
-                System.out.println("ButtonPanel height: " + getHeight());
             }
         });
 
