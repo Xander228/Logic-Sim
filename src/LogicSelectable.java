@@ -112,8 +112,9 @@ public class LogicSelectable extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 if (!draggable) return;
-                if(e.getX() > Constants.BORDER_WIDTH &&
-                        e.getX() < pane.getWidth() - Constants.BORDER_WIDTH &&
+                if(
+                        e.getX() > Constants.BORDER_WIDTH + Constants.BUTTON_PANEL_HEIGHT &&
+                        e.getX() < pane.getWidth() - (Constants.BORDER_WIDTH * 3 + Constants.BUTTON_PANEL_HEIGHT) &&
                         e.getY() > Constants.BORDER_WIDTH * 5 + Constants.BUTTON_PANEL_HEIGHT * 2 - pane.getHeight() &&
                         e.getY() < -(Constants.BORDER_WIDTH))
                     createComponent();

@@ -23,9 +23,11 @@ public class MainContainer extends JLayeredPane {
         simStage = new SimStage();
         BottomPanel bottomPanel = new BottomPanel();
 
-        mainPanel.add(topPanel,BorderLayout.NORTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(simStage);
-        mainPanel.add(bottomPanel,BorderLayout.SOUTH);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.add(new IOPanel(), BorderLayout.EAST);
+        mainPanel.add(new IOPanel(), BorderLayout.WEST);
 
         setLayout(null);
         add(mainPanel);
