@@ -24,6 +24,10 @@ public class SimStage extends JPanel {
         setBackground(Constants.BACKGROUND_COLOR);
         setLayout(null);
 
+        add(new Wire(Color.RED, true));
+
+        add(new Wire(Color.RED, false));
+
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 addListeners();
@@ -123,7 +127,7 @@ public class SimStage extends JPanel {
                 viewPortOffsetX = startX + deltaX;
                 viewPortOffsetY = startY + deltaY;
 
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
                 repaint();
             }
 
@@ -133,7 +137,7 @@ public class SimStage extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 centeredZoom(e.getPreciseWheelRotation());
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
             }
         });
 
@@ -143,7 +147,7 @@ public class SimStage extends JPanel {
                 double deltaHeight = (e.getComponent().getHeight() - oldHeight) / cellWidth;
 
                 viewPortOffsetY = viewPortOffsetY + deltaHeight;
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
 
                 oldHeight = e.getComponent().getHeight();
                 repaint();

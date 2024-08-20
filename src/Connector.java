@@ -1,8 +1,7 @@
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.io.Serializable;
 
-public class Connector implements Serializable {
+public class Connector {
     private double xCenter,yCenter;
     private double radius;
     private double outerCircleDiameter;
@@ -49,7 +48,7 @@ public class Connector implements Serializable {
         g2d.fill(innerCircle);
 
         g2d.setColor(Constants.BACKGROUND_COLOR);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 12).deriveFont((float)(radius * 1.375)));
+        g2d.setFont(Constants.CONNCETOR_FONT.deriveFont((float)(radius * 1.375)));
         double xOffset = attributes.isInput ? (radius) : -(radius) - (g2d.getFontMetrics().stringWidth(attributes.name));
         g2d.drawString(attributes.name, (float)(xCenter + xOffset), (float)(yCenter + radius / 2.0));
     }

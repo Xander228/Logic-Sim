@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 public class LogicAttributes implements Serializable {
     public Color color;
-    public boolean verticalName;
     public String name;
     public int logicId;
 
@@ -14,7 +13,6 @@ public class LogicAttributes implements Serializable {
     public LogicAttributes(int logicId, String name, boolean verticalName, Color color, ArrayList<ConnectorAttributes> inputAttributes, ArrayList<ConnectorAttributes> outputAttributes){
         this.logicId = logicId;
         this.name = name;
-        this.verticalName = verticalName;
         this.color = color;
         this.inputAttributes = new ArrayList<>(inputAttributes);
         this.outputAttributes = new ArrayList<>(outputAttributes);

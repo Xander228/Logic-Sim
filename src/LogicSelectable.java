@@ -185,7 +185,7 @@ public class LogicSelectable extends JComponent {
             outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
-        repaint();
+        //repaint();
     }
 
     private void destruct(){

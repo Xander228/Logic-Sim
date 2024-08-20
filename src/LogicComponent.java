@@ -2,71 +2,22 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
-public class LogicComponent extends JComponent {
+public class LogicComponent extends LogicBase {
     LogicAttributes attributes;
+
+    private boolean dragging;
+    private int mouseX, mouseY;
+    private double startX, startY;
 
     public ArrayList<Connector> inputConnectors;
     public ArrayList<Connector> outputConnectors;
 
-    private boolean dragging;
-    private int boardX, boardY;
-    private int pixelX, pixelY;
-
-    private int mouseX, mouseY;
-    private double startX, startY;
-
-
     LogicComponent(LogicAttributes attributes) {
         this.attributes = attributes;
-
-        initializeConnectors();
-
-        setOpaque(false);
         this.dragging = false;
-        setLayout(null);
-
-        InputMap inputMap = getInputMap(JComponent.WHEN_FOCUSED);
-        inputMap.put(KeyStroke.getKeyStroke("UP"),"up");
-        inputMap.put(KeyStroke.getKeyStroke('w'),"up");
-
-        inputMap.put(KeyStroke.getKeyStroke("DOWN"),"down");
-        inputMap.put(KeyStroke.getKeyStroke('s'),"down");
-
-        inputMap.put(KeyStroke.getKeyStroke("LEFT"),"left");
-        inputMap.put(KeyStroke.getKeyStroke('a'),"left");
-
-        inputMap.put(KeyStroke.getKeyStroke("RIGHT"),"right");
-        inputMap.put(KeyStroke.getKeyStroke('d'),"right");
-
-        ActionMap actionMap = getActionMap();
-        actionMap.put("up", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                setBoardLocation(getBoardLocation().x, getBoardLocation().y - 1);
-
-            }
-        });
-        actionMap.put("down", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                setBoardLocation(getBoardLocation().x, getBoardLocation().y + 1);
-            }
-        });
-        actionMap.put("left", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                setBoardLocation(getBoardLocation().x - 1, getBoardLocation().y);
-            }
-        });
-        actionMap.put("right", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                setBoardLocation(getBoardLocation().x + 1, getBoardLocation().y);
-            }
-        });
+        initializeConnectors();
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -76,21 +27,19 @@ public class LogicComponent extends JComponent {
     }
 
     private void addListeners(){
-
         SimStage stage = (SimStage) this.getParent();
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                    createChild();
-                }
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) createChild();
                 if (e.getButton() == MouseEvent.BUTTON2) destruct();
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 mouseX = e.getXOnScreen();
                 mouseY = e.getYOnScreen();
 
-                startX = pixelX;
-                startY = pixelY;
+                Point pixel = getPixelLocation();
+                startX = pixel.x;
+                startY = pixel.y;
 
                 dragging = true;
                 grabFocus();
@@ -101,6 +50,7 @@ public class LogicComponent extends JComponent {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
                 dragging = false;
                 snapToBoard();
+                stage.repaint();
             }
 
         });
@@ -122,10 +72,9 @@ public class LogicComponent extends JComponent {
 
                 stage.repaint();
             }
-
         });
-        addFocusListener(new FocusAdapter() {
 
+        addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 setBorder(new MatteBorder(2,2,2,2,Color.CYAN));
@@ -154,119 +103,33 @@ public class LogicComponent extends JComponent {
         }
     }
 
-    private Point pixelToBoard(Point2D.Double pixel){
-        SimStage simStage = (SimStage) getParent();
-        return new Point(
-                (int) Math.round(pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX),
-                (int) Math.round(pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY));
-    }
-
-    private Point2D.Double boardToPixel(Point board){
-        SimStage simStage = (SimStage) getParent();
-        return new Point2D.Double(
-                (board.getX() + simStage.viewPortOffsetX) * SimStage.cellWidth,
-                (board.getY() + simStage.viewPortOffsetY) * SimStage.cellWidth);
-    }
-
-    public void snapToBoard(){
-        setBoardLocation(pixelToBoard(new Point2D.Double(pixelX,pixelY)));
-    }
-
-    public Point getBoardLocation(){
-        return new Point(boardX, boardY);
+    @Override
+    protected Dimension updateDimensions() {
+        return new Dimension(
+                (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)) + 2,
+                Math.max(inputConnectors.size(), outputConnectors.size()) * 2);
 
     }
 
-    public void setBoardLocationFromScreen(Point p){
-        SwingUtilities.convertPointFromScreen(p, this.getParent());
-        setBoardLocation(pixelToBoard(new Point2D.Double(p.x, p.y)));
-    }
+    @Override
+    protected void updateLocation() {
+        super.updateLocation();
 
-    public void setBoardLocation(Point p){
-        setBoardLocation(p.x, p.y);
-    }
-
-    public void setPixelLocation(Point2D.Double p){
-        setPixelLocation(p.x, p.y);
-    }
-
-    public void setBoardLocation(int x, int y) {
-        boardX = x;
-        boardY = y;
-
-        updateRelativeLocation();
-    }
-
-    public void setPixelLocation(double x, double y){
-        pixelX = (int) x;
-        pixelY = (int) y;
-
-        updateLocation();
-        repaint();
-        getParent().repaint();
-    }
-
-    public void updateRelativeLocation(){
-        setPixelLocation(boardToPixel(new Point(boardX,boardY)));
-    }
-
-    private void updateLocation(){
+        Dimension bounds = updateDimensions();
         double cellWidth = SimStage.cellWidth;
+        double doubleWidth = bounds.width * cellWidth;
 
-        int minHeightInCells = Math.max(inputConnectors.size(), outputConnectors.size()) * 2;
-        double doubleHeight = minHeightInCells * cellWidth;
-        int minWidthInCells = (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)) + 2;
-        double doubleWidth = minWidthInCells * cellWidth;
-
-        setBounds(
-                (int) (pixelX),
-                (int) (pixelY),
-                (int) doubleWidth,
-                (int) doubleHeight);
-
-        boolean isEven = ((minHeightInCells / 2) - inputConnectors.size()) % 2 == 0;
+        boolean isEven = ((bounds.height / 2) - inputConnectors.size()) % 2 == 0;
         for (int i = 0; i < inputConnectors.size(); i++) {
             if(inputConnectors.get(i) == null) continue;
             inputConnectors.get(i).setBounds(cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
-        isEven = ((minHeightInCells / 2) - outputConnectors.size()) % 2 == 0;
+        isEven = ((bounds.height / 2) - outputConnectors.size()) % 2 == 0;
         for (int i = 0; i < outputConnectors.size(); i++){
             if(outputConnectors.get(i) == null) continue;
             outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
-
-        repaint();
-    }
-
-    public void setTop(){
-        SimStage simStage = (SimStage) getParent();
-        simStage.setTop(this);
-        grabFocus();
-    }
-
-    private void destruct(){
-
-        //remove all listeners
-        for (MouseListener ml : getMouseListeners()) {
-            removeMouseListener(ml);
-        }
-        for (MouseMotionListener mml : getMouseMotionListeners()) {
-            removeMouseMotionListener(mml);
-        }
-        for (FocusListener fl : getFocusListeners()) {
-            removeFocusListener(fl);
-        }
-
-        getInputMap(JComponent.WHEN_FOCUSED).clear();
-        getActionMap().clear();
-
-        JComponent pane = (JComponent) SwingUtilities.getAncestorOfClass(JComponent.class, this);
-        if(pane == null) return;
-        pane.remove(this);
-        pane.revalidate();
-        pane.repaint();
-        if(hasFocus()) pane.grabFocus();
     }
 
     public void createChild() {
