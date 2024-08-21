@@ -22,7 +22,7 @@ public class Constants {
     public static final double ZOOM_SCALE_FACTOR = 0.1;
     public static final double PAN_SPEED_FACTOR = 10;
 
-    public static final double WIRE_WIDTH = .2;
+    public static final double WIRE_WIDTH = .25;
     public static final Font CONNCETOR_FONT = new Font("Arial", Font.PLAIN, 12);
     public static final Font COMPONENT_FONT = new Font("Arial", Font.BOLD, 12);
 

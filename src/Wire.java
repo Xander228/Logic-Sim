@@ -42,12 +42,13 @@ public class Wire extends LogicBase {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON2) destruct();
-                if(e.getButton() != MouseEvent.BUTTON1) return;
+                grabFocus();
+                if(e.getButton() != MouseEvent.BUTTON1 && e.getButton() != MouseEvent.BUTTON2) return;
 
                 Point2D draggedPoint = null;
+                ArrayList<Shape> controlBounds = controlPointBounds();
                 for(int i = 0; i < controlPoints.size(); i++){
-                    Shape shape = controlPointBounds().get(i);
+                    Shape shape = controlBounds.get(i);
                     if(shape.contains(e.getX(),e.getY())) {
                         draggedPoint = controlPoints.get(i);
                         break;
@@ -55,7 +56,30 @@ public class Wire extends LogicBase {
                 }
 
                 draggedIndex = controlPoints.indexOf(draggedPoint);
-                System.out.println(draggedPoint);
+
+                if (e.getButton() == MouseEvent.BUTTON2) {
+                    controlPoints.remove(draggedIndex);
+                    draggedIndex = -1;
+                    if(controlPoints.size() < 2) destruct();
+                    stage.repaint();
+                    return;
+                }
+
+                if(draggedPoint == null) {
+                    ArrayList<Shape> wireBounds = wireBounds();
+                    for(int i = 0; i < wireBounds.size(); i++){
+                        Shape shape = wireBounds.get(i);
+                        if(shape.contains(e.getX(),e.getY())) {
+                            draggedPoint = new Point2D.Double(
+                                    e.getX() / SimStage.cellWidth + getBoardLocation().x - boardInsetX,
+                                    e.getY() / SimStage.cellWidth + getBoardLocation().y - boardInsetY);
+                            controlPoints.add(i + 1, draggedPoint);
+                            draggedIndex = i + 1;
+                            break;
+                        }
+                    }
+                }
+
                 if(draggedPoint == null) return;
 
                 mouseX = e.getXOnScreen();
@@ -63,8 +87,6 @@ public class Wire extends LogicBase {
 
                 startX = draggedPoint.getX();
                 startY = draggedPoint.getY();
-                grabFocus();
-
             }
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -123,6 +145,11 @@ public class Wire extends LogicBase {
         for(int i = 0; i < controlPoints.size() - 1; i++){
             Point2D p1 = controlPoints.get(i);
             Point2D p2 = controlPoints.get(i + 1);
+            if(p1.equals(p2)){
+                controlPoints.remove(p2);
+                if(controlPoints.size() < 2) destruct();
+                continue;
+            }
             double hyp = p1.distance(p2);
 
             double offY = boundRadius * (p1.getX() - p2.getX()) / hyp;
@@ -222,14 +249,14 @@ public class Wire extends LogicBase {
         double cellWidth = SimStage.cellWidth;
 
         g2.setColor(color);
-        g2.setStroke(new BasicStroke((float)(cellWidth * .2)));
+        g2.setStroke(new BasicStroke((float)(cellWidth * Constants.WIRE_WIDTH)));
 
         if(isOn) g2.setColor(color);
         else g2.setColor(color.darker());
 
         Point board = getBoardLocation();
 
-        double radius = 1;
+        double radius = .5;
         ArrayList<Point2D> endPoints = new ArrayList<>();
         for(int i = 0; i < controlPoints.size() - 1; i++){
             Point2D p1 = controlPoints.get(i);
@@ -281,14 +308,19 @@ public class Wire extends LogicBase {
 
 
         for(int i = 0; i < controlPoints.size(); i++){
-            if(i == 0 || i == controlPoints.size() - 1) g2.setColor(Constants.PRIMARY_COLOR);
+            double terminusRadius = .15;
+            if(i == 0 || i == controlPoints.size() - 1) {
+                g2.setColor(Constants.PRIMARY_COLOR);
+                terminusRadius *= 1.5;
+
+            }
             else if(hasFocus()) g2.setColor(Color.CYAN);
             else continue;
             g2.fill(new Ellipse2D.Double(
-                    (controlPoints.get(i).getX() - Constants.WIRE_WIDTH - board.x + boardInsetX) * cellWidth,
-                    (controlPoints.get(i).getY() - Constants.WIRE_WIDTH - board.y + boardInsetY) * cellWidth,
-                    (Constants.WIRE_WIDTH * 2.0) * cellWidth,
-                    (Constants.WIRE_WIDTH * 2.0) * cellWidth));
+                    (controlPoints.get(i).getX() - terminusRadius - board.x + boardInsetX) * cellWidth,
+                    (controlPoints.get(i).getY() - terminusRadius - board.y + boardInsetY) * cellWidth,
+                    (terminusRadius * 2.0) * cellWidth,
+                    (terminusRadius * 2.0) * cellWidth));
         }
 
 
