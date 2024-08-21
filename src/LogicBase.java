@@ -141,6 +141,12 @@ public abstract class LogicBase extends JComponent {
         grabFocus();
     }
 
+    public void setBack(){
+        SimStage simStage = (SimStage) getParent();
+        simStage.setTop(this);
+        grabFocus();
+    }
+
     protected void destruct(){
 
         //remove all listeners
