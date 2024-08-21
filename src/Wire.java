@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -22,18 +23,20 @@ public class Wire extends LogicBase {
         this.color = color;
         this.isOn = isOn;
         this.controlPoints = new ArrayList<>();
-        setBorder(new MatteBorder(1,1,1,1, Color.WHITE));
-        controlPoints.add(new Point(0,0));
-        controlPoints.add(new Point(10,10));
-        controlPoints.add(new Point(20,10));
-        controlPoints.add(new Point(10,30));
-        controlPoints.add(new Point(10,20));
+        setBoardInset(2,2);
+        setBorder(new MatteBorder(2,2,2,2,Color.WHITE));
 
+        controlPoints.add(new Point2D.Double(0,0));
+        controlPoints.add(new Point2D.Double(10,10));
+        controlPoints.add(new Point2D.Double(20,10));
+        controlPoints.add(new Point2D.Double(10,-50));
+        controlPoints.add(new Point2D.Double(10,20));
 
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 addListeners();
+                updateBounds();
             }
         });
     }
@@ -93,7 +96,7 @@ public class Wire extends LogicBase {
                 double newY = startY + deltaY;
 
                 controlPoints.set(draggedIndex, new Point2D.Double(newX, newY));
-                updateLocation();
+                updateBounds();
 
                 stage.repaint();
             }
@@ -132,17 +135,19 @@ public class Wire extends LogicBase {
             int[] xPoints = new int[4];
             int[] yPoints = new int[4];
 
-            xPoints[0] = (int) ((p1.getX() + offX + 1) * cellWidth);
-            yPoints[0] = (int) ((p1.getY() - offY + 1) * cellWidth);
+            Point board = getBoardLocation();
 
-            xPoints[1] = (int) ((p1.getX() - offX + 1) * cellWidth);
-            yPoints[1] = (int) ((p1.getY() + offY + 1) * cellWidth);
+            xPoints[0] = (int) ((p1.getX() + offX - board.x + boardInsetX) * cellWidth);
+            yPoints[0] = (int) ((p1.getY() - offY - board.y + boardInsetY) * cellWidth);
 
-            xPoints[2] = (int) ((p2.getX() - offX + 1) * cellWidth);
-            yPoints[2] = (int) ((p2.getY() + offY + 1) * cellWidth);
+            xPoints[1] = (int) ((p1.getX() - offX - board.x + boardInsetX) * cellWidth);
+            yPoints[1] = (int) ((p1.getY() + offY - board.y + boardInsetY) * cellWidth);
 
-            xPoints[3] = (int) ((p2.getX() + offX + 1) * cellWidth);
-            yPoints[3] = (int) ((p2.getY() - offY + 1) * cellWidth);
+            xPoints[2] = (int) ((p2.getX() - offX - board.x + boardInsetX) * cellWidth);
+            yPoints[2] = (int) ((p2.getY() + offY - board.y + boardInsetY) * cellWidth);
+
+            xPoints[3] = (int) ((p2.getX() + offX - board.x + boardInsetX) * cellWidth);
+            yPoints[3] = (int) ((p2.getY() - offY - board.y + boardInsetY) * cellWidth);
 
             shapes.add(new Polygon(xPoints, yPoints, 4));
         }
@@ -154,10 +159,12 @@ public class Wire extends LogicBase {
         int boundRadius = 1;
         double cellWidth = SimStage.cellWidth;
 
+        Point board = getBoardLocation();
+
         for(Point2D p : controlPoints){
             shapes.add(new Ellipse2D.Double(
-                    (p.getX() - boundRadius + 1) * cellWidth,
-                    (p.getY() - boundRadius + 1) * cellWidth,
+                    (p.getX() - boundRadius - board.x + boardInsetX) * cellWidth,
+                    (p.getY() - boundRadius - board.y + boardInsetY) * cellWidth,
                     (boundRadius * 2.0) * cellWidth,
                     (boundRadius * 2.0) * cellWidth));
         }
@@ -175,6 +182,16 @@ public class Wire extends LogicBase {
         return false;
     }
 
+    public void updateBounds(){
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+
+        for(Point2D p : controlPoints){
+            minX = Math.min(minX, p.getX());
+            minY = Math.min(minY, p.getY());
+        }
+        setBoardLocation((int)Math.floor(minX), (int)Math.floor(minY));
+    }
 
     @Override
     protected Dimension updateDimensions() {
@@ -191,7 +208,15 @@ public class Wire extends LogicBase {
         }
 
 
-        return new Dimension((int)(maxX - minX) + 2, (int)(maxY - minY) + 2);
+        return new Dimension((int)Math.ceil(maxX - minX), (int)Math.ceil(maxY - minY));
+    }
+
+    @Override
+    public void snapToBoard(){
+        super.snapToBoard();
+        for(Point2D p : controlPoints){
+            p.setLocation((int)Math.round(p.getX()), (int)Math.round(p.getY()));
+        }
     }
 
     @Override
@@ -206,26 +231,61 @@ public class Wire extends LogicBase {
         if(isOn) g2.setColor(color);
         else g2.setColor(color.darker());
 
+        Point board = getBoardLocation();
 
+        /*
         for(int i = 0; i < controlPoints.size() - 1; i++){
             g2.draw( new Line2D.Double(
-                    (controlPoints.get(i).getX() + 1) * cellWidth,
-                    (controlPoints.get(i).getY() + 1) * cellWidth,
-                    (controlPoints.get(i + 1).getX() + 1) * cellWidth,
-                    (controlPoints.get(i + 1).getY() + 1) * cellWidth));
+                    (controlPoints.get(i).getX() - board.x + boardInsetX) * cellWidth,
+                    (controlPoints.get(i).getY() - board.y + boardInsetY) * cellWidth,
+                    (controlPoints.get(i + 1).getX() - board.x + boardInsetX) * cellWidth,
+                    (controlPoints.get(i + 1).getY() - board.y + boardInsetY) * cellWidth));
         }
+
+         */
+        Path2D path = new Path2D.Double();
+        Point2D firstPoint = controlPoints.get(0);
+        path.moveTo(
+                (firstPoint.getX() - board.x + boardInsetX) * cellWidth,
+                (firstPoint.getY() - board.y + boardInsetY) * cellWidth
+        );
+
+        for (int i = 1; i < controlPoints.size(); i++) {
+            Point2D prevPoint = controlPoints.get(i - 1);
+            Point2D currPoint = controlPoints.get(i);
+            double midX = (prevPoint.getX() + currPoint.getX()) / 2;
+            double midY = (prevPoint.getY() + currPoint.getY()) / 2;
+
+            path.quadTo(
+                    (prevPoint.getX() - board.x + boardInsetX) * cellWidth,
+                    (prevPoint.getY() - board.y + boardInsetY) * cellWidth,
+                    (midX - board.x + boardInsetX) * cellWidth,
+                    (midY - board.y + boardInsetY) * cellWidth
+            );
+            path.lineTo(
+                    (currPoint.getX() - board.x + boardInsetX) * cellWidth,
+                    (currPoint.getY() - board.y + boardInsetY) * cellWidth
+            );
+        }
+
+        g2.draw(path);
+
+
+
+
+
 
         g2.setColor(Constants.PRIMARY_COLOR);
         Shape terminus = new Ellipse2D.Double(
-                (controlPoints.getFirst().getX() - Constants.WIRE_WIDTH + 1) * cellWidth,
-                (controlPoints.getFirst().getY() - Constants.WIRE_WIDTH + 1) * cellWidth,
+                (controlPoints.getFirst().getX() - Constants.WIRE_WIDTH - board.x + boardInsetX) * cellWidth,
+                (controlPoints.getFirst().getY() - Constants.WIRE_WIDTH - board.y + boardInsetY) * cellWidth,
                 (Constants.WIRE_WIDTH * 2.0) * cellWidth,
                 (Constants.WIRE_WIDTH * 2.0) * cellWidth);
         g2.fill(terminus);
 
         terminus = new Ellipse2D.Double(
-                (controlPoints.getLast().getX() - Constants.WIRE_WIDTH + 1) * cellWidth,
-                (controlPoints.getLast().getY() - Constants.WIRE_WIDTH + 1) * cellWidth,
+                (controlPoints.getLast().getX() - Constants.WIRE_WIDTH - board.x + boardInsetX) * cellWidth,
+                (controlPoints.getLast().getY() - Constants.WIRE_WIDTH - board.y + boardInsetY) * cellWidth,
                 (Constants.WIRE_WIDTH * 2.0) * cellWidth,
                 (Constants.WIRE_WIDTH * 2.0) * cellWidth);
         g2.fill(terminus);
@@ -233,10 +293,10 @@ public class Wire extends LogicBase {
         g2.setColor(hasFocus() ? Color.CYAN : Color.WHITE);
         g2.setStroke(new BasicStroke((float)(cellWidth * .1)));
         for(Shape shape : wireBounds()){
-            g2.draw(shape);
+            //g2.draw(shape);
         }
         for (Shape shape : controlPointBounds()){
-            g2.draw(shape);
+            //g2.draw(shape);
         }
     }
 }

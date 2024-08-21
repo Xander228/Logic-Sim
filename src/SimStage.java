@@ -21,16 +21,18 @@ public class SimStage extends JPanel {
         dragging = false;
         cellWidth = Constants.DEFAULT_CELL_WIDTH;
         setPreferredSize(new Dimension(Constants.DESIRED_VIEWPORT_WIDTH, Constants.DESIRED_VIEWPORT_HEIGHT));
+
+
         setBackground(Constants.BACKGROUND_COLOR);
         setLayout(null);
-
-        add(new Wire(Color.RED, true));
-
-        add(new Wire(Color.RED, false));
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 addListeners();
+                oldHeight = getHeight();
+                viewPortOffsetY = getHeight() / cellWidth - 1;
+                Wire wire = new Wire(Color.RED, true);
+                add(wire);
             }
         });
 
@@ -92,9 +94,6 @@ public class SimStage extends JPanel {
     }
 
     private void addListeners(){
-        oldHeight = getHeight();
-        viewPortOffsetY = getHeight() / cellWidth - 1;
-
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

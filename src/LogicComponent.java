@@ -17,6 +17,7 @@ public class LogicComponent extends LogicBase {
     LogicComponent(LogicAttributes attributes) {
         this.attributes = attributes;
         this.dragging = false;
+        setBoardInset(1,0);
         initializeConnectors();
 
         EventQueue.invokeLater(new Runnable() {
@@ -106,7 +107,7 @@ public class LogicComponent extends LogicBase {
     @Override
     protected Dimension updateDimensions() {
         return new Dimension(
-                (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)) + 2,
+                (int) Math.ceil(LogicDisplayController.calculateWidth(this,attributes)),
                 Math.max(inputConnectors.size(), outputConnectors.size()) * 2);
 
     }
@@ -122,13 +123,19 @@ public class LogicComponent extends LogicBase {
         boolean isEven = ((bounds.height / 2) - inputConnectors.size()) % 2 == 0;
         for (int i = 0; i < inputConnectors.size(); i++) {
             if(inputConnectors.get(i) == null) continue;
-            inputConnectors.get(i).setBounds(cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+            inputConnectors.get(i).setBounds(
+                    boardInsetX * cellWidth,
+                    cellWidth * (i * 2 + (isEven ? 1 : 2)),
+                    cellWidth);
         }
 
         isEven = ((bounds.height / 2) - outputConnectors.size()) % 2 == 0;
         for (int i = 0; i < outputConnectors.size(); i++){
             if(outputConnectors.get(i) == null) continue;
-            outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+            outputConnectors.get(i).setBounds(
+                    doubleWidth + boardInsetX * cellWidth,
+                    cellWidth * (i * 2 + (isEven ? 1 : 2)),
+                    cellWidth);
         }
     }
 

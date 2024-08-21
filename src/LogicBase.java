@@ -1,10 +1,6 @@
 import javax.swing.*;
-import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 
 public abstract class LogicBase extends JComponent {
@@ -12,6 +8,7 @@ public abstract class LogicBase extends JComponent {
 
     protected int boardX, boardY;
     protected int pixelX, pixelY;
+    protected double boardInsetX, boardInsetY;
 
 
 
@@ -61,15 +58,15 @@ public abstract class LogicBase extends JComponent {
     private Point pixelToBoard(Point2D.Double pixel){
         SimStage simStage = (SimStage) getParent();
         return new Point(
-                (int) Math.round(pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX),
-                (int) Math.round(pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY));
+                (int) Math.round(pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX + boardInsetX),
+                (int) Math.round(pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY + boardInsetY));
     }
 
     private Point2D.Double boardToPixel(Point board){
         SimStage simStage = (SimStage) getParent();
         return new Point2D.Double(
-                (board.getX() + simStage.viewPortOffsetX) * SimStage.cellWidth,
-                (board.getY() + simStage.viewPortOffsetY) * SimStage.cellWidth);
+                (board.getX() + simStage.viewPortOffsetX - boardInsetX) * SimStage.cellWidth,
+                (board.getY() + simStage.viewPortOffsetY - boardInsetY) * SimStage.cellWidth);
     }
 
     public void snapToBoard(){
@@ -106,8 +103,8 @@ public abstract class LogicBase extends JComponent {
     }
 
     public void setPixelLocation(double x, double y){
-        pixelX = (int) x;
-        pixelY = (int) y;
+        pixelX = (int) Math.floor(x);
+        pixelY = (int) Math.floor(y);
 
         updateLocation();
     }
@@ -118,6 +115,11 @@ public abstract class LogicBase extends JComponent {
 
     protected abstract Dimension updateDimensions();
 
+    public void setBoardInset(double xInset, double yInset){
+        boardInsetX = xInset;
+        boardInsetY = yInset;
+    }
+
     protected void updateLocation(){
         double cellWidth = SimStage.cellWidth;
 
@@ -127,10 +129,10 @@ public abstract class LogicBase extends JComponent {
 
 
         setBounds(
-                (int) (pixelX),
-                (int) (pixelY),
-                (int) doubleWidth,
-                (int) doubleHeight);
+                (int) Math.floor(pixelX - boardInsetX * cellWidth),
+                (int) Math.floor(pixelY - boardInsetY * cellWidth),
+                (int) Math.floor(doubleWidth + boardInsetX * cellWidth * 2),
+                (int) Math.floor(doubleHeight + boardInsetY * cellWidth * 2));
     }
 
     public void setTop(){
