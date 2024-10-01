@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class LogicComponent extends LogicBase {
@@ -38,7 +39,7 @@ public class LogicComponent extends LogicBase {
                 mouseX = e.getXOnScreen();
                 mouseY = e.getYOnScreen();
 
-                Point pixel = getPixelLocation();
+                Point2D.Double pixel = getPixelLocation();
                 startX = pixel.x;
                 startY = pixel.y;
 

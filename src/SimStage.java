@@ -31,8 +31,8 @@ public class SimStage extends JPanel {
                 addListeners();
                 oldHeight = getHeight();
                 viewPortOffsetY = getHeight() / cellWidth - 1;
-                Wire wire = new Wire(Color.RED, true);
-                add(wire);
+                add(new Wire(Color.GREEN, true));
+                add(new Wire(Color.YELLOW, true));
             }
         });
 
@@ -64,28 +64,28 @@ public class SimStage extends JPanel {
         actionMap.put("up", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 viewPortOffsetY += Constants.PAN_SPEED_FACTOR / cellWidth;
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
                 repaint();
             }
         });
         actionMap.put("down", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 viewPortOffsetY -= Constants.PAN_SPEED_FACTOR / cellWidth;
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
                 repaint();
             }
         });
         actionMap.put("left", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 viewPortOffsetX += Constants.PAN_SPEED_FACTOR / cellWidth;
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
                 repaint();
             }
         });
         actionMap.put("right", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 viewPortOffsetX -= Constants.PAN_SPEED_FACTOR / cellWidth;
-                for(Component c : getComponents()) ((LogicComponent) c).updateRelativeLocation();
+                for(Component c : getComponents()) ((LogicBase) c).updateRelativeLocation();
                 repaint();
             }
         });

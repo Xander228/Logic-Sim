@@ -7,7 +7,7 @@ public abstract class LogicBase extends JComponent {
 
 
     protected int boardX, boardY;
-    protected int pixelX, pixelY;
+    protected double pixelX, pixelY;
     protected double boardInsetX, boardInsetY;
 
 
@@ -78,12 +78,13 @@ public abstract class LogicBase extends JComponent {
 
     }
 
-    public Point getPixelLocation(){
-        return new Point(pixelX, pixelY);
+    public Point2D.Double getPixelLocation(){
+        return new Point2D.Double(pixelX, pixelY);
     }
 
     public void setBoardLocationFromScreen(Point p){
         SwingUtilities.convertPointFromScreen(p, this.getParent());
+        System.out.println(pixelToBoard(new Point2D.Double(p.x, p.y)));
         setBoardLocation(pixelToBoard(new Point2D.Double(p.x, p.y)));
     }
 
@@ -103,14 +104,15 @@ public abstract class LogicBase extends JComponent {
     }
 
     public void setPixelLocation(double x, double y){
-        pixelX = (int) Math.floor(x);
-        pixelY = (int) Math.floor(y);
+        pixelX = x;
+        pixelY = y;
 
         updateLocation();
     }
 
     public void updateRelativeLocation(){
         setPixelLocation(boardToPixel(new Point(boardX,boardY)));
+        repaint();
     }
 
     protected abstract Dimension updateDimensions();
@@ -124,15 +126,14 @@ public abstract class LogicBase extends JComponent {
         double cellWidth = SimStage.cellWidth;
 
         Dimension bounds = updateDimensions();
-        double doubleWidth = bounds.width * cellWidth;
-        double doubleHeight = bounds.height * cellWidth;
-
+        double doubleWidth = (bounds.width + boardInsetX * 2) * cellWidth;
+        double doubleHeight = (bounds.height + boardInsetY * 2) * cellWidth;
 
         setBounds(
-                (int) Math.floor(pixelX - boardInsetX * cellWidth),
-                (int) Math.floor(pixelY - boardInsetY * cellWidth),
-                (int) Math.floor(doubleWidth + boardInsetX * cellWidth * 2),
-                (int) Math.floor(doubleHeight + boardInsetY * cellWidth * 2));
+                (int) Math.floor(pixelX),
+                (int) Math.floor(pixelY),
+                (int) Math.floor(doubleWidth),
+                (int) Math.floor(doubleHeight));
     }
 
     public void setTop(){
