@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 
 public class SimStage extends JPanel {
@@ -15,13 +18,15 @@ public class SimStage extends JPanel {
 
     boolean dragging;
 
+    HashSet<Connector> connectors;
+
     SimStage() {
         super();
 
         dragging = false;
         cellWidth = Constants.DEFAULT_CELL_WIDTH;
         setPreferredSize(new Dimension(Constants.DESIRED_VIEWPORT_WIDTH, Constants.DESIRED_VIEWPORT_HEIGHT));
-
+        connectors = new HashSet<>();
 
         setBackground(Constants.BACKGROUND_COLOR);
         setLayout(null);
@@ -31,8 +36,12 @@ public class SimStage extends JPanel {
                 addListeners();
                 oldHeight = getHeight();
                 viewPortOffsetY = getHeight() / cellWidth - 1;
-                add(new Wire(Color.GREEN, true));
+                add(new Wire(Color.RED, true));
+                add(new Wire(Color.ORANGE, true));
                 add(new Wire(Color.YELLOW, true));
+                add(new Wire(Color.GREEN, true));
+                add(new Wire(Color.BLUE, true));
+                add(new Wire(Color.MAGENTA, true));
             }
         });
 
@@ -154,11 +163,65 @@ public class SimStage extends JPanel {
         });
     }
 
+
     public void setTop(Component component) {
-        add(component, 0);
+        setComponentZOrder(component, 0);
         repaint();
     }
 
+    public void setBottom(Component component) {
+        setComponentZOrder(component, getComponentCount() - 1);
+        repaint();
+    }
+
+
+/*
+    public void setTop(Component component) {
+        if(component instanceof LogicComponent) {
+            setComponentZOrder(component, 0);
+        } else if(component instanceof Wire) {
+            setComponentZOrder(component, getComponentCount() - 1);
+            for (Component c : getComponents()) {
+                if (c instanceof Wire && c != component) {
+                    setComponentZOrder(c, getComponentCount() - 1);
+                }
+            }
+        }
+        else setComponentZOrder(component, 0);
+        repaint();
+    }
+
+    public void setBottom(Component component) {
+        if(component instanceof Wire) {
+            setComponentZOrder(component, getComponentCount() - 1);
+        } else if(component instanceof LogicComponent) {
+            setComponentZOrder(component, 0);
+            for (Component c : getComponents()) {
+                if (c instanceof LogicComponent && c != component) {
+                    setComponentZOrder(c, 0);
+                }
+            }
+        }
+        else setComponentZOrder(component, getComponentCount() - 1);
+        repaint();
+    }
+
+ */
+
+    public void registerConnectors(ArrayList<Connector> newConnectors) {
+        this.connectors.addAll(newConnectors);
+        this.connectors.remove(null);
+        System.out.println(connectors);
+    }
+
+    public void unRegisterConnectors(ArrayList<Connector> oldConnectors) {
+        this.connectors.removeAll(oldConnectors);
+        System.out.println(connectors);
+    }
+
+    public ArrayList<Connector> getConnectors() {
+        return new ArrayList<>(connectors);
+    }
     public void centeredZoom(double zoomFactor) {
         Point p = getMousePosition();
         double oldCellWidth = cellWidth;
@@ -168,6 +231,8 @@ public class SimStage extends JPanel {
         viewPortOffsetY -= (p.getY() * (cellWidth / oldCellWidth - 1)) / cellWidth;
         repaint();
     }
+
+
 
 
     @Override

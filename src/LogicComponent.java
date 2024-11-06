@@ -24,6 +24,7 @@ public class LogicComponent extends LogicBase {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 addListeners();
+                registerConnectors();
             }
         });
     }
@@ -105,6 +106,20 @@ public class LogicComponent extends LogicBase {
         }
     }
 
+    private void registerConnectors() {
+        SimStage stage = (SimStage) getParent();
+        stage.registerConnectors(inputConnectors);
+        stage.registerConnectors(outputConnectors);
+    }
+
+    private void unRegisterConnectors() {
+        SimStage stage = (SimStage) getParent();
+        stage.unRegisterConnectors(inputConnectors);
+        stage.unRegisterConnectors(outputConnectors);
+        for(Connector connector : inputConnectors) if(connector != null) connector.removeAllConnections();
+        for(Connector connector : outputConnectors) if(connector != null) connector.removeAllConnections();
+    }
+
     @Override
     protected Dimension updateDimensions() {
         return new Dimension(
@@ -125,6 +140,8 @@ public class LogicComponent extends LogicBase {
         for (int i = 0; i < inputConnectors.size(); i++) {
             if(inputConnectors.get(i) == null) continue;
             inputConnectors.get(i).setBounds(
+                    super.boardX,
+                    super.boardY + i * 2 + (isEven ? 1 : 2),
                     boardInsetX * cellWidth,
                     cellWidth * (i * 2 + (isEven ? 1 : 2)),
                     cellWidth);
@@ -134,6 +151,8 @@ public class LogicComponent extends LogicBase {
         for (int i = 0; i < outputConnectors.size(); i++){
             if(outputConnectors.get(i) == null) continue;
             outputConnectors.get(i).setBounds(
+                    super.boardX + bounds.width,
+                    super.boardY + i * 2 + (isEven ? 1 : 2),
                     doubleWidth + boardInsetX * cellWidth,
                     cellWidth * (i * 2 + (isEven ? 1 : 2)),
                     cellWidth);
@@ -150,6 +169,23 @@ public class LogicComponent extends LogicBase {
         setTop();
     }
 
+    @Override
+    public boolean contains(int x, int y) {
+        for (Connector connector : inputConnectors) {
+            if (connector != null && connector.isConnected() && connector.contains(x, y)) return false;
+        }
+        for (Connector connector : outputConnectors) {
+            if (connector != null && connector.isConnected() && connector.contains(x, y)) return false;
+        }
+
+        return super.contains(x,y);
+    }
+
+    @Override
+    protected void destruct() {
+        unRegisterConnectors();
+        super.destruct();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {

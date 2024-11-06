@@ -6,7 +6,7 @@ import java.awt.geom.Point2D;
 public abstract class LogicBase extends JComponent {
 
 
-    protected int boardX, boardY;
+    protected double boardX, boardY;
     protected double pixelX, pixelY;
     protected double boardInsetX, boardInsetY;
 
@@ -16,6 +16,7 @@ public abstract class LogicBase extends JComponent {
         setOpaque(false);
         setLayout(null);
 
+        /*
         InputMap inputMap = getInputMap(JComponent.WHEN_FOCUSED);
         inputMap.put(KeyStroke.getKeyStroke("UP"),"up");
         inputMap.put(KeyStroke.getKeyStroke('w'),"up");
@@ -52,17 +53,19 @@ public abstract class LogicBase extends JComponent {
             }
         });
 
+         */
+
 
     }
 
-    private Point pixelToBoard(Point2D.Double pixel){
+    private Point2D.Double pixelToBoard(Point2D.Double pixel){
         SimStage simStage = (SimStage) getParent();
-        return new Point(
-                (int) Math.round(pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX + boardInsetX),
-                (int) Math.round(pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY + boardInsetY));
+        return new Point2D.Double(
+                pixel.getX() / SimStage.cellWidth - simStage.viewPortOffsetX + boardInsetX,
+                pixel.getY() / SimStage.cellWidth - simStage.viewPortOffsetY + boardInsetY);
     }
 
-    private Point2D.Double boardToPixel(Point board){
+    private Point2D.Double boardToPixel(Point2D.Double board){
         SimStage simStage = (SimStage) getParent();
         return new Point2D.Double(
                 (board.getX() + simStage.viewPortOffsetX - boardInsetX) * SimStage.cellWidth,
@@ -70,11 +73,13 @@ public abstract class LogicBase extends JComponent {
     }
 
     public void snapToBoard(){
-        setBoardLocation(pixelToBoard(new Point2D.Double(pixelX,pixelY)));
+        Point2D board = pixelToBoard(new Point2D.Double(pixelX, pixelY));
+        board.setLocation(Math.round(board.getX()), Math.round(board.getY()));
+        setBoardLocation(board);
     }
 
-    public Point getBoardLocation(){
-        return new Point(boardX, boardY);
+    public Point2D getBoardLocation(){
+        return new Point2D.Double(boardX, boardY);
 
     }
 
@@ -84,21 +89,20 @@ public abstract class LogicBase extends JComponent {
 
     public void setBoardLocationFromScreen(Point p){
         SwingUtilities.convertPointFromScreen(p, this.getParent());
-        System.out.println(pixelToBoard(new Point2D.Double(p.x, p.y)));
         setBoardLocation(pixelToBoard(new Point2D.Double(p.x, p.y)));
     }
 
-    public void setBoardLocation(Point p){
-        setBoardLocation(p.x, p.y);
+    public void setBoardLocation(Point2D p){
+        setBoardLocation(p.getX(), p.getY());
     }
 
     public void setPixelLocation(Point2D.Double p){
         setPixelLocation(p.x, p.y);
     }
 
-    public void setBoardLocation(int x, int y) {
-        boardX = x;
-        boardY = y;
+    public void setBoardLocation(double x, double y) {
+        boardX = Math.round(x);
+        boardY = Math.round(y);
 
         updateRelativeLocation();
     }
@@ -106,12 +110,15 @@ public abstract class LogicBase extends JComponent {
     public void setPixelLocation(double x, double y){
         pixelX = x;
         pixelY = y;
+        Point2D board = pixelToBoard(new Point2D.Double(pixelX, pixelY));
+        boardX = board.getX();
+        boardY = board.getY();
 
         updateLocation();
     }
 
     public void updateRelativeLocation(){
-        setPixelLocation(boardToPixel(new Point(boardX,boardY)));
+        setPixelLocation(boardToPixel(new Point2D.Double(boardX,boardY)));
         repaint();
     }
 
@@ -142,10 +149,9 @@ public abstract class LogicBase extends JComponent {
         grabFocus();
     }
 
-    public void setBack(){
+    public void setBottom(){
         SimStage simStage = (SimStage) getParent();
-        simStage.setTop(this);
-        grabFocus();
+        simStage.setBottom(this);
     }
 
     protected void destruct(){

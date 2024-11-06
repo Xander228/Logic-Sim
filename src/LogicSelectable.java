@@ -176,13 +176,13 @@ public class LogicSelectable extends JComponent {
         boolean isEven = ((minHeightInCells / 2) - inputConnectors.size()) % 2 == 0;
         for (int i = 0; i < inputConnectors.size(); i++) {
             if(inputConnectors.get(i) == null) continue;
-            inputConnectors.get(i).setBounds(cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+            inputConnectors.get(i).setBounds(0,0,cellWidth, (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
         isEven = ((minHeightInCells / 2) - outputConnectors.size()) % 2 == 0;
         for (int i = 0; i < outputConnectors.size(); i++){
             if(outputConnectors.get(i) == null) continue;
-            outputConnectors.get(i).setBounds((doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
+            outputConnectors.get(i).setBounds(0,0,(doubleWidth - cellWidth), (cellWidth * (i * 2 + (isEven ? 1 : 2)) ), cellWidth);
         }
 
         //repaint();
